@@ -1,6 +1,6 @@
 const Serializable = require('../interface/Serializable')
 
-class CursorAdditional extends Serializable{
+class CursorAdditional extends Serializable {
     constructor () {
         super()
     }

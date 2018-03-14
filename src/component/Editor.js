@@ -78,7 +78,7 @@ class Editor {
 
     _bindKey () {
         this.keybinding.bind('Backspace', (event) => {
-            console.info(event)
+
             console.info('Backspace')
         })
 
