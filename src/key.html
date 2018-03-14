@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+
+</body>
+<script src="keymaster.js"></script>
+<script>
+    key('up', function(){ console.info('Arrow Up!')});
+    key('right', function(){ console.info('Arrow Down!')});
+    key('down', function(){ console.info('Arrow Right!')});
+    key('left', function(){ console.info('Arrow Left!')});
+    document.addEventListener('copy', function (event) {
+        console.info('copy!')
+    })
+</script>
+</html>

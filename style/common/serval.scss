@@ -1,0 +1,197 @@
+.serval {
+    position: relative;
+    height: 100%;
+
+    .serval-container {
+        height: 100%;
+
+        .detector-container {
+            margin-left: 50px;
+            position: absolute;
+            opacity: 0;
+
+            .line-content {}
+        }
+
+        .line-container {
+            position: relative;
+            font-size: 0; /* 清除空白文字节点造成的间隙*/
+
+            .line-number-container {
+                position: absolute;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+                padding-right: 15px;
+                width: 50px;
+                text-align: right;
+                .line-number {
+                    display: block;
+                    -webkit-box-sizing: border-box;
+                            box-sizing: border-box;
+
+                    height: 20px;
+                    line-height: 20px;
+
+                    font-size: 12px;
+                }
+            }
+
+            .line-content-container {
+                margin-left: 50px;
+                .line-content {}
+            }
+        }
+
+        .line-content {
+            display: block;
+            // white-space: pre;
+            height: 20px;
+            line-height: 20px;
+
+            font-size: 12px;
+        }
+
+        .cursor-container {
+            position: absolute;
+            top: 0;
+            margin-left: 50px;
+
+            .fake-cursor {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+
+                width: 0;
+                height: 18px;
+                margin-top: 1px;
+            }
+        }
+
+        .selected-container {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            .selected-line {
+                position: absolute;
+                left: 0;
+                top: 0;
+
+                width: 100%;
+                height: 20px;
+            }
+        }
+
+        .selection-container {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            .selection-part {
+                display: none;
+                position: absolute;
+                top: 0;
+                right: 0;
+                left: 0;
+
+                height: 20px;
+            }
+        }
+
+        .inputer-container {
+            position: absolute;
+            top: 0;
+            margin-left: 50px;
+            .inputer {
+                position: absolute;
+                left: 0;
+                top: 0;
+
+                border: 0;
+                resize: none;
+                width: 0;
+
+                height: 20px;
+                line-height: 20px;
+                opacity: 0;
+            }
+        }
+    }
+}
+
+
+.theme-harusame {
+    background-color: rgba(black, .8);
+
+    .serval-container {
+
+        .detector-container {
+            .line-content {}
+        }
+
+        .line-container {
+            font-family: Consolas;
+            .line-number-container {
+                .line-number {
+                    color: white;
+                    cursor: default;
+                }
+            }
+
+            .line-content-container {
+                cursor: text; /* 行号上不应该有文字型的光标*/
+                .line-content {}
+            }
+        }
+
+        .line-content {
+            font-family: Consolas;
+            color: white;
+        }
+
+        .cursor-container {
+            .fake-cursor {
+                border-right: 1px solid rgba(255, 255, 255, .9);
+            }
+
+            .active {
+                -webkit-animation: blink 1s ease 0s infinite both;
+                        animation: blink 1s ease 0s infinite both;
+
+                @-webkit-keyframes blink {
+                    0% {
+                        opacity: 1;
+                    }
+                    100% {
+                        opacity: .3;
+                    }
+                }
+
+                @keyframes blink {
+                    0% {
+                        opacity: 1;
+                    }
+                    100% {
+                        opacity: .3;
+                    }
+                }
+            }
+
+            .inactive {
+                border-color: rgba(255, 255, 255, .6);
+            }
+        }
+
+        .selected-container {
+            .selected-line {
+                background-color: rgba(255, 255, 255, .15);
+            }
+        }
+
+        .selection-container {
+            .selection-part {
+                background-color: rgba(120, 120, 120, .5);
+            }
+        }
+    }
+}
+

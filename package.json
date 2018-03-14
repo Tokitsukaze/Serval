@@ -1,0 +1,15 @@
+{
+  "name": "serval",
+  "version": "1.0.0",
+  "description": "Errr",
+  "main": "index.js",
+  "scripts": {
+    "bundle": "parcel index.html --open",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "irodorin",
+  "license": "ISC",
+  "devDependencies": {
+    "node-sass": "^4.7.2"
+  }
+}
