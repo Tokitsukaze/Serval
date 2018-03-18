@@ -57,6 +57,7 @@ class Inputer {
 
             let content = event.data
 
+            console.info('end content', content)
             if (content.length !== 0) {
                 this.listener.emit('input', content)
                 this.$inputer.value = ''

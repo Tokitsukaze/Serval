@@ -7,14 +7,16 @@ class Detector {
     constructor (config) {
         this.template = TemplateDetector()
 
+        this.$detector = this.template.$detector
+
         this.config = config
 
         this._$mount()
     }
 
     detect (content, type) {
-        this.template.$detector.textContent = content
-        return parseFloat(getComputedStyle(this.template.$detector).width)
+        this.$detector.textContent = content
+        return parseFloat(getComputedStyle(this.$detector).width)
     }
 
     _$mount () {

@@ -2,9 +2,14 @@ const EventListener = require('./EventListener')
 const Detector = require('./Detector')
 const LineManager = require('./LineManager')
 const CursorManager = require('./CursorManager')
-// const Maid = require('./Maid')
+const SelectionManager = require('./SelectionManager')
 const Inputer = require('./Inputer')
 const KeyBinding = require('./KeyBinding')
+const Processor = require('./Processor')
+const EditorFns = require('./EditorFns')
+const Tracker = require('./Tracker')
+
+const FnInput = require('../fns/Input')
 
 const TemplateEditor = require('../template/Editor')
 
@@ -25,13 +30,21 @@ class Editor {
 
         this.listener = new EventListener()
 
-        this.line = new LineManager(this.config)
-        this.cursor = new CursorManager(this.config, this.line)
+        this.processor = new Processor()
+        this.detector = new Detector(this.config)
+        this.line = new LineManager(this.config, this.processor)
+        this.selection = new SelectionManager(this.config, this.line)
+        this.cursor = new CursorManager(this.config, this.line, this.detector, this.selection)
         this.inputer = new Inputer(this.config, this.listener)
         this.keybinding = new KeyBinding(this.config, this.inputer, this.listener)
 
+        this.tracker = new Tracker(this.config)
+        this.fns = new EditorFns(this.line, this.cursor, this.processor, this.listener, this.tracker)
+
         this._$mount()
 
+        this._initHooks()
+        this._initFns()
         this._init()
         this._initReceiver()
         this._initEvent()
@@ -46,12 +59,19 @@ class Editor {
             '$target': $target || config['$target'],
 
             'keybinding-break': '+',
+            'line-height': 20,
+            'line-number-width': 50,
+            'line-width': 750,
 
             'start-from': config['start-from'] || 1,
             'initial-content': config['initial-content'] || '',
             'read-only': config['read-only'] || false,
         }
     }
+
+    getLineHeight () {}
+    getLineNumberWidth () {}
+    getLineWidth () {}
 
     _$mount () {
         this.config['$target'].appendChild(this.$template.$serval)
@@ -67,9 +87,7 @@ class Editor {
             return
         }
 
-        this.listener.on('input', (content) => {
-            console.info('content')
-        })
+        this.listener.on('input', this.fns.call('input'))
 
         this.listener.on('blur', () => {
             this.inputer.inactive()
@@ -78,7 +96,6 @@ class Editor {
 
     _bindKey () {
         this.keybinding.bind('Backspace', (event) => {
-
             console.info('Backspace')
         })
 
@@ -133,8 +150,8 @@ class Editor {
         this.listener.bind(this.config['$serval-container'], 'mousemove', this._mousemove.bind(this))
         this.listener.bind(this.config['$serval-container'], 'mouseup', this._mouseup.bind(this))
 
-        this.listener.bind(this.config['$serval-container'], 'copy', this._copy.bind(this))
-        this.listener.bind(this.config['$serval-container'], 'paste', this._paste.bind(this))
+        // this.listener.bind(this.config['$serval-container'], 'copy', this._copy.bind(this))
+        // this.listener.bind(this.config['$serval-container'], 'paste', this._paste.bind(this))
     }
 
     /* Mouse Event Below */
@@ -152,14 +169,22 @@ class Editor {
         event.preventDefault()
     }
 
-    /* Copy and Paste */
-    _copy (event) {
-
+    _initFns () {
+        this.fns.registry(new FnInput())
     }
 
-    _paste (event) {
+    _initHooks () {
+        const hook_prefix = 'hook:'
+        const hooks = [
+            'input'
+        ]
 
+        hooks.forEach((hook_name) => {
+            this.listener.on(hook_prefix + hook_name, noop)
+        })
     }
 }
+
+function noop () {}
 
 module.exports = Editor
