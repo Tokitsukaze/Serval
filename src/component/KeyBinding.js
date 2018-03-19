@@ -1,7 +1,6 @@
 const EventListener = require('./EventListener')
 const Algorithms = require('../util/Algorithms')
 
-const TOSTRING_SIGN = 'k'
 const BREAK = '-'
 
 const SPECIAL_KEY_MAP = {
@@ -68,14 +67,6 @@ class KeyBinding {
         }
     }
 
-    _getAllPossibility (keys_without_trigger) {
-        return Algorithms.allPermutation(keys_without_trigger)
-    }
-
-    _normalize (arr) {
-        return arr.join(BREAK)
-    }
-
     unbind (keys) {
         keys = this._split(keys)
 
@@ -95,13 +86,30 @@ class KeyBinding {
         }
     }
 
+    isKeydown (key) {
+        return !!~this.keydown.indexOf(this._getCode(key))
+    }
+
+    /* <- Private -> */
+
+    _getCode (key_code) {
+        return SPECIAL_KEY_MAP[key_code] || key_code.toUpperCase().charCodeAt(0)
+    }
+
+    _getAllPossibility (keys_without_trigger) {
+        return Algorithms.allPermutation(keys_without_trigger)
+    }
+
+    _normalize (arr) {
+        return arr.join(BREAK)
+    }
+
     _getHandler (trigger) {
         if (this.handler[trigger] === undefined) {
             this.handler[trigger] = Object.create(null)
         }
 
         return this.handler[trigger]
-
     }
 
     /**
@@ -111,12 +119,8 @@ class KeyBinding {
     _split (keys) {
         return keys.toLowerCase().split(this.config['keybinding-break']).map((key) => {
             key = key.trim()
-            return SPECIAL_KEY_MAP[key] == null ? key.toUpperCase().charCodeAt(0) : (SPECIAL_KEY_MAP[key])
+            return this._getCode(key)
         })
-    }
-
-    _getCode (key_code) {
-        return SPECIAL_KEY_MAP[key_code] || key_code.toUpperCase().charCodeAt(0)
     }
 
     /**
@@ -125,7 +129,7 @@ class KeyBinding {
      */
     _bindKeyboardEvent () {
         this.listener.bind(this.inputer.$inputer, 'keydown', (event) => {
-            console.info('event', event.keyCode)
+            // console.info('event', event.keyCode)
             let key_code = event.keyCode
 
             if (this.keydown.indexOf(key_code) === -1) {

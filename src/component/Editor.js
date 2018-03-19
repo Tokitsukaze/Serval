@@ -10,6 +10,8 @@ const EditorFns = require('./EditorFns')
 const Tracker = require('./Tracker')
 
 const FnInput = require('../fns/Input')
+const FnEnter = require('../fns/Enter')
+const FnCtrlEnter = require('../fns/CtrlEnter')
 
 const TemplateEditor = require('../template/Editor')
 
@@ -40,6 +42,8 @@ class Editor {
 
         this.tracker = new Tracker(this.config)
         this.fns = new EditorFns(this.line, this.cursor, this.processor, this.listener, this.tracker)
+
+        this.is_active = false
 
         this._$mount()
 
@@ -103,9 +107,9 @@ class Editor {
             console.info('Tab')
         })
 
-        this.keybinding.bind('Enter', () => {
-            console.info('Enter')
-        })
+        this.keybinding.bind('Enter', this.fns.call('enter'))
+
+        this.keybinding.bind('Ctrl + Enter', this.fns.call('ctrl-enter'))
 
         this.keybinding.bind('Space', () => {
             console.info('Space')
@@ -143,34 +147,93 @@ class Editor {
         this.keybinding.bind('Ctrl + A', () => {
             console.info('Ctrl + A')
         })
+
+        this.keybinding.bind('Ctrl + Z', (event) => {
+            event.preventDefault()
+            event.stopPropagation()
+
+            this.tracker.undo((step) => {
+                this.fns.get(step.name).undo(step)
+            })
+        })
+
+        this.keybinding.bind('Ctrl + Y', (event) => {
+            event.preventDefault()
+            event.stopPropagation()
+
+            this.tracker.redo((step) => {
+                this.fns.get(step.name).redo(step)
+            })
+        })
     }
 
     _initEvent () {
-        this.listener.bind(this.config['$serval-container'], 'mousedown', this._mousedown.bind(this))
-        this.listener.bind(this.config['$serval-container'], 'mousemove', this._mousemove.bind(this))
-        this.listener.bind(this.config['$serval-container'], 'mouseup', this._mouseup.bind(this))
+        this.listener.bind(this.config['$serval-container'], 'mousedown', _mousedown.bind(this))
+        this.listener.bind(this.config['$serval-container'], 'mousemove', _mousemove.bind(this))
+        this.listener.bind(this.config['$serval-container'], 'mouseup', _mouseup.bind(this))
+
+        /* Mouse Event Below */
+        let is_mousedown = false
+
+        let isKeydown = this.keybinding.isKeydown
+
+       function  _mousedown (event) {
+            event.preventDefault()
+
+            if (!this.is_active) {
+                return
+            }
+
+            this.inputer.active()
+
+            is_mousedown = true
+
+            if (isKeydown('ctrl')) {
+                CtrlMousedown()
+            } else if (isKeydown('shift')) {
+                ShiftMousedown()
+            } else {
+                SimpleMousedown()
+            }
+
+
+        }
+
+       function  _mousemove (event) {
+            event.preventDefault()
+
+            if (!this.is_active) {
+                return
+            }
+
+            if (is_mousedown) {
+
+            }
+        }
+
+       function  _mouseup (event) {
+            event.preventDefault()
+
+            if (!this.is_active) {
+                this.is_active = true
+                this.inputer.active()
+                this.cursor.active()
+                return
+            }
+
+            is_mousedown = false
+        }
 
         // this.listener.bind(this.config['$serval-container'], 'copy', this._copy.bind(this))
         // this.listener.bind(this.config['$serval-container'], 'paste', this._paste.bind(this))
     }
 
-    /* Mouse Event Below */
-    _mousedown (event) {
-        event.preventDefault()
 
-        this.inputer.active()
-    }
-
-    _mousemove (event) {
-        event.preventDefault()
-    }
-
-    _mouseup (event) {
-        event.preventDefault()
-    }
 
     _initFns () {
         this.fns.registry(new FnInput())
+        this.fns.registry(new FnEnter())
+        this.fns.registry(new FnCtrlEnter())
     }
 
     _initHooks () {

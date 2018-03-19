@@ -110,16 +110,15 @@ class LineManager {
         if (Array.isArray(content)) {
             let length = content.length
 
-            if (length === 1) {
-                node.innerHTML = this.processor.process(before + content[0] + after)
-                return
-            } else if (length === 2) {
-                node.innerHTML = this.processor.process(before + content[0])
-                this.create(target_line_number + 1, this.processor.process(content[index] + after))
-            } else if (length > 2) {
+            if (length > 2) {
                 for (let i = target_line_number, index = 1; index < length; index++) {
                     this.create(i + index, this.processor.process(content[index]))
                 }
+            } else if (length === 2) {
+                node.innerHTML = this.processor.process(before + content[0])
+                this.create(target_line_number + 1, this.processor.process(content[index] + after))
+            } else if (length === 1) {
+                node.innerHTML = this.processor.process(before + content[0] + after)
             }
         } else {
             node.innerHTML = this.processor.process(before + content + after)

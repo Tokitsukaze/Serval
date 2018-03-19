@@ -14,10 +14,13 @@ class EditorFns {
     }
 
     registry (fn) {
-        this.fns[fn.name] = function (...args) {
-            let step = new Step(fn.name, this.before(), fn.do.call(this, ...args), this.after())
-            this.tracker.push(step)
-        }.bind(this)
+        this.fns[fn.name] = {
+            value: fn,
+            call: function (...args) {
+                let step = new Step(fn.name, this.before(), fn.do.call(this, ...args), this.after())
+                this.tracker.push(step)
+            }.bind(this)
+        }
     }
 
     before () {
@@ -28,8 +31,19 @@ class EditorFns {
         return this.cursor.serialize()
     }
 
+    traverse (cb) {
+        let fns = this.fns
+        for (let fn in fns) {
+            cb(fns[fn].value)
+        }
+    }
+
+    get (name) {
+        return this.fns[name].value
+    }
+
     call (name) {
-        return this.fns[name]
+        return this.fns[name].call
     }
 }
 

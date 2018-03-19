@@ -29,8 +29,7 @@ class CursorManager extends CursorManagerAdditional {
 
     traverse (cb) {
         let cursor_list = this.cursor_list
-
-        for (let i = 0; i < cursor_list; i++) {
+        for (let i = 0; i < cursor_list.length; i++) {
             cb(cursor_list[i])
         }
     }
@@ -64,8 +63,8 @@ class CursorManager extends CursorManagerAdditional {
 
         for (let i = 0; i < length; i++) {
 
-            cursor._setLogicalYWithoutOffset(offsetY)
-            cursor.logicalY === lastY ? cursor._setLogicalXWithoutOffset(offsetX) : (offset = 0)
+            cursor._setLogicalYWithoutOffset(cursor.logicalY + offsetY)
+            cursor.logicalY === lastY ? cursor._setLogicalXWithoutOffset(cursor.logicalX + offsetX) : (offsetX = 0)
 
             task(cursor_list[i])
 

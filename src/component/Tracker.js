@@ -1,32 +1,31 @@
 class Tracker {
     constructor (config, fns) {
-        this.undo = []
-        this.redo = []
-
-        this.current = -1
+        this.undos = []
+        this.redos = []
     }
 
     push (step) {
-        this.current++
-        this.undo.push(step)
+        this.undos.push(step)
     }
 
     undo (fn) {
-        let step = this.undo.pop()
-        this.redo.push(step)
-        fn(step)
-        console.info('undo', step.name)
+        if (this.undos.length < 1) {
+            return
+        }
+
+        let step = this.undos.pop()
+        this.redos.push(step)
+        fn && fn(step)
     }
 
     redo (fn) {
-        let step = this.redo.pop()
-        this.undo.push(step)
-        fn(step)
-        console.info('redo', step.name)
-    }
+        if (this.redos.length < 1) {
+            return
+        }
 
-    _package () {
-
+        let step = this.redos.pop()
+        this.undos.push(step)
+        fn && fn(step)
     }
 }
 
