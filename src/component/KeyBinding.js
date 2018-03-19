@@ -129,7 +129,6 @@ class KeyBinding {
      */
     _bindKeyboardEvent () {
         this.listener.bind(this.inputer.$inputer, 'keydown', (event) => {
-            // console.info('event', event.keyCode)
             let key_code = event.keyCode
 
             if (this.keydown.indexOf(key_code) === -1) {

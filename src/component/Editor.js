@@ -189,13 +189,14 @@ class Editor {
             is_mousedown = true
 
             if (isKeydown('ctrl')) {
-                CtrlMousedown()
+                this.cursor.create()
             } else if (isKeydown('shift')) {
-                ShiftMousedown()
-            } else {
-                SimpleMousedown()
-            }
 
+            } else {
+                if (this.cursor.length() > 1) {
+
+                }
+            }
 
         }
 

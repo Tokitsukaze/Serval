@@ -34,6 +34,10 @@ class CursorManager extends CursorManagerAdditional {
         }
     }
 
+    length () {
+        return this.cursor_list.length
+    }
+
     /**
      * 1. 任何时候访问 cursor.logicalX/Y setter 都会对 offset X/Y 进行修改，所以此处重设 offset X/Y 到之前的状态
      * 后话: 这里通过内置了一个函数来做此事
