@@ -18,7 +18,8 @@ class Cursor extends CursorAdditional {
 
         this.offsetY = 0
         this.offsetX = 0
-        this.tempPysicalX = -1
+
+        this.arrowX = -1
 
         this._initObserver()
     }
@@ -82,8 +83,15 @@ class Cursor extends CursorAdditional {
         })
     }
 
+    /**
+     * 1.
+     * issue#1
+     * https://github.com/Tokitsukaze/serval/issues/1
+     * 这个 0.1 是为了防止点击到最后一行的边缘处，会跳到不存在的下一行。
+     * 比如 20px 一行，那么点到 20px 处，会导致 20 / 20 = 1 也就是第2行，但是第二行还不存在，就会出错
+     */
     calcLogicalY (psysicalX) {
-        return parseInt(psysicalX / this.config['line-height'])
+        return parseInt((psysicalX - .1) / this.config['line-height'])
     }
 
     calcPsysicalY (logicalY) {
@@ -163,9 +171,14 @@ class Cursor extends CursorAdditional {
         this.$cursor.className = 'fake-cursor inactive'
     }
 
+    updateView () {
+        this.$cursor.style.left = this.point.psysicalX + 'px'
+        this.$cursor.style.top = this.point.psysicalY + 'px'
+    }
+
     /* <- 偏移量部分 -> */
 
-    _resetOffset () {
+    resetOffset () {
         this.offsetX = 0
         this.offsetY = 0
     }
@@ -173,7 +186,7 @@ class Cursor extends CursorAdditional {
     /**
      * 移动 logicalY，并且不影响 offsetY
      */
-    _setLogicalYWithoutOffset (logicalY) {
+    setLogicalYWithoutOffset (logicalY) {
         this.point.logicalY = logicalY
         this.point.psysicalY = this.calcPsysicalY(logicalY)
 
@@ -183,7 +196,7 @@ class Cursor extends CursorAdditional {
     /**
      * 移动 logicalX，并且不影响 offsetX
      */
-    _setLogicalXWithoutOffset (logicalX) {
+    setLogicalXWithoutOffset (logicalX) {
         this.point.logicalX = logicalX
         this.point.psysicalX = this.calcPsysicalX(logicalX)
 
@@ -238,6 +251,14 @@ class Cursor extends CursorAdditional {
 
     /* <- 选区视图与内容部分 -> */
 
+    updateSelectionPosition (point = this.point) {
+        this.selection.updatePosition(point)
+    }
+
+    updateSelectionView (check_type) {
+        this.selection.updateView(check_type)
+    }
+
     getSelectionContent () {
         return this.selection.getContent()
     }
@@ -247,8 +268,8 @@ class Cursor extends CursorAdditional {
 
         let start = this.selection.getStart()
 
-        this._setLogicalYWithoutOffset(start.logicalY)
-        this._setLogicalXWithoutOffset(start.logicalX)
+        this.setLogicalYWithoutOffset(start.logicalY)
+        this.setLogicalXWithoutOffset(start.logicalX)
 
         /* Temp Fix: 避免光标初始就在选区起点，所以导致不触发 offset 的问题 */
         this.extraY -= effectY
@@ -262,8 +283,38 @@ class Cursor extends CursorAdditional {
         this.selection.updateView()
     }
 
-    release () {
-        this.selection.release()
+    /* <- arrowX -> */
+
+    isArrowXExist () {
+        return this.arrowX !== -1
+    }
+
+    setArrowX (psysicalX) {
+        this.arrowX = psysicalX
+    }
+
+    resetArrowX () {
+        this.arrowX = -1
+    }
+
+    getArrowX () {
+        return this.arrowX
+    }
+
+    /* <- State Control -> */
+
+    active () {
+        this.$cursor.className = 'fake-cursor active'
+    }
+
+    inactive () {
+        this.$cursor.className = 'fake-cursor inactive'
+    }
+
+    /* <- For Release -> */
+
+    $getRef () {
+        return this.$cursor
     }
 }
 

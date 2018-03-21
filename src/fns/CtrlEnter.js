@@ -10,9 +10,10 @@ class CtrlEnter extends FnAdditional {
         event.preventDefault()
 
         this.cursor.do((cursor) => {
-            self.line.create(cursor.logicalY + 1)
-            v_cursor.logicalY += 1
-            v_cursor.xToStart()
+            this.line.create(cursor.logicalY + 1)
+
+            cursor.logicalY += 1
+            cursor.xToStart()
         })
     }
 

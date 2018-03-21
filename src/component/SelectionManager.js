@@ -18,6 +18,10 @@ class SelectionManager {
         return selection
     }
 
+    release (selection) {
+        this.template.$selection_container.removeChild(selection.$getRef())
+    }
+
     _$mount () {
         this.config['$serval-container'].appendChild(this.template.$selection_container)
     }

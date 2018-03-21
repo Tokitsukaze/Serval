@@ -83,7 +83,7 @@ class LineManager {
     }
 
     getContent (target_line_number, to_number) {
-        if (to_number === undefined) {
+        if (to_number === void 0) {
             return this.$getContentList()[target_line_number].textContent
         }
 
@@ -133,6 +133,8 @@ class LineManager {
         let node = $content_list[target_line_number]
         let content = node.textContent
 
+
+
         node.innerHTML = this.processor.process(content.substring(0, start) + content.substring(end, content.length))
 
         // node.textContent = content.substring(0, start) + content.substring(end, content.length)
@@ -147,6 +149,7 @@ class LineManager {
     }
 
     _$mount () {
+        this.template.$line_container.style.zIndex = 1
         this.config['$serval-container'].appendChild(this.template.$line_container)
     }
 

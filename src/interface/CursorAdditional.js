@@ -2,12 +2,26 @@ class CursorAdditional {
     constructor () {}
 
     serialize () {
-        return "po,px,0,py,0,lx,0,ly,0,ss,px,0,py,0,lx,0,ly,0,se,px,0,py,0,lx,0,ly,0"
+        let data = {
+            point: this.point,
+            selection: {
+                start: this.selection.start,
+                end: this.selection.end
+            }
+        }
+
+        return data
     }
 
-    deserialize () {
-        console.info('return cursor de')
-        return 'cursor deserialize'
+    deserialize (data) {
+        let {point, selection} = data
+
+        this.point.deepCopy(point)
+        this.selection.start.deepCopy(selection.start)
+        this.selection.end.deepCopy(selection.end)
+
+        this.updateView()
+        this.updateSelectionView()
     }
 }
 

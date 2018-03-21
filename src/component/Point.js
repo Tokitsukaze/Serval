@@ -1,5 +1,9 @@
-class Point {
+const PointAdditional = require('../interface/PointAdditional')
+
+class Point extends PointAdditional {
     constructor () {
+        super()
+
         this.logicalY = 0
         this.logicalX = 0
         this.psysicalY = 0
@@ -11,6 +15,8 @@ class Point {
         this.logicalX = point.logicalX
         this.psysicalY = point.psysicalY
         this.psysicalX = point.psysicalX
+
+        return this
     }
 
      greater (point) {

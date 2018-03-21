@@ -14,13 +14,20 @@ class EditorFns {
     }
 
     registry (fn) {
-        this.fns[fn.name] = {
-            value: fn,
-            call: function (...args) {
+        let obj = Object.create(null)
+
+        obj.value = fn
+
+        if (fn.getState('track')) {
+            obj.call = function (...args) {
                 let step = new Step(fn.name, this.before(), fn.do.call(this, ...args), this.after())
                 this.tracker.push(step)
             }.bind(this)
+        } else {
+            obj.call = fn.do.bind(this)
         }
+
+        this.fns[fn.name] = obj
     }
 
     before () {

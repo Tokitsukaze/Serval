@@ -20,22 +20,48 @@ class CursorManager extends CursorManagerAdditional {
         this._$mount()
     }
 
+    active () {
+        this.traverse(cursor => cursor.active())
+    }
+
+    inactive () {
+        this.traverse(cursor => cursor.inactive())
+    }
+
     create () {
         let cursor = this.current = new Cursor(this.config, this.line, this.detector, this.selection.create())
 
         this.cursor_list.push(cursor)
         this._$mount_cursor(cursor.$cursor)
+
+        return cursor
+    }
+
+    /**
+     * 清空所有光标
+     */
+    clear () {
+        this.traverse((cursor) => {
+            this.selection.release(cursor.selection)
+            this.template.$cursor_container.removeChild(cursor.$getRef())
+            this.cursor_list = []
+            this.current = null
+        })
+    }
+
+    length () {
+        return this.cursor_list.length
     }
 
     traverse (cb) {
         let cursor_list = this.cursor_list
         for (let i = 0; i < cursor_list.length; i++) {
-            cb(cursor_list[i])
-        }
-    }
+            let cursor = cursor_list[i]
 
-    length () {
-        return this.cursor_list.length
+            this.beforeTask(cursor, i)
+
+            cb(cursor, i)
+        }
     }
 
     /**
@@ -50,7 +76,7 @@ class CursorManager extends CursorManagerAdditional {
 
         if (remove_selection) {
             for (let i = length - 1; i >= 0;  i--) {
-                var cursor = cursor_list[i]
+                let cursor = cursor_list[i]
 
                 cursor.extraY = 0
                 cursor.extraX = 0
@@ -66,11 +92,14 @@ class CursorManager extends CursorManagerAdditional {
         let lastY = -1
 
         for (let i = 0; i < length; i++) {
+            let cursor = cursor_list[i]
 
-            cursor._setLogicalYWithoutOffset(cursor.logicalY + offsetY)
-            cursor.logicalY === lastY ? cursor._setLogicalXWithoutOffset(cursor.logicalX + offsetX) : (offsetX = 0)
+            cursor.setLogicalYWithoutOffset(cursor.logicalY + offsetY)
+            cursor.logicalY === lastY ? cursor.setLogicalXWithoutOffset(cursor.logicalX + offsetX) : (offsetX = 0)
 
-            task(cursor_list[i])
+            this.beforeTask(cursor, i)
+
+            task(cursor, i)
 
             /* 3 */
             offsetY += cursor.offsetY
@@ -78,7 +107,7 @@ class CursorManager extends CursorManagerAdditional {
 
             lastY = cursor.logicalY
 
-            cursor._resetOffset()
+            cursor.resetOffset()
         }
     }
 

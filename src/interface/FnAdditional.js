@@ -1,7 +1,21 @@
 class FnAdditional {
     constructor () {
         this.name = null
-        this.need_track = true
+        this.track = null
+
+        this.enableTrack()
+    }
+
+    getState (name) {
+        return this[name]
+    }
+
+    enableTrack () {
+        this.track = true
+    }
+
+    disableTrack () {
+        this.track = false
     }
 
     do () {
@@ -9,14 +23,14 @@ class FnAdditional {
     }
 
     redo () {
-        if (this.need_track) {
-            throw Error('redo must be implemented if need_track is true')
+        if (this.track) {
+            throw Error('redo must be implemented if track is true')
         }
     }
 
     undo () {
-        if (this.need_track) {
-            throw Error('undo must be implemented if need_track is true')
+        if (this.track) {
+            throw Error('undo must be implemented if track is true')
         }
     }
 }

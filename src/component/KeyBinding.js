@@ -16,10 +16,10 @@ const SPECIAL_KEY_MAP = {
     'pagedown': 34,
     'home': 35,
     'end': 36,
-    '←': 37,
-    '↑': 38,
-    '→': 39,
-    '↓': 40,
+    '←': 37, 'left': 37, 'arrow-left': 37,
+    '↑': 38, 'up': 38, 'arrow-up': 38,
+    '→': 39, 'right': 39, 'arrow-right': 39,
+    '↓': 40, 'down': 40, 'arrow-down': 40,
     'delete': 46
 }
 
@@ -35,6 +35,8 @@ class KeyBinding {
 
         this.listener = listener
         this.inputer = inputer
+
+        this.lastKeycode = -1
 
         this._bindKeyboardEvent()
     }
@@ -86,15 +88,19 @@ class KeyBinding {
         }
     }
 
+    getCode (key_code) {
+        return SPECIAL_KEY_MAP[key_code] || key_code.toUpperCase().charCodeAt(0)
+    }
+
     isKeydown (key) {
-        return !!~this.keydown.indexOf(this._getCode(key))
+        return !!~this.keydown.indexOf(this.getCode(key))
+    }
+
+    getLastKeycode () {
+        return this.lastKeycode
     }
 
     /* <- Private -> */
-
-    _getCode (key_code) {
-        return SPECIAL_KEY_MAP[key_code] || key_code.toUpperCase().charCodeAt(0)
-    }
 
     _getAllPossibility (keys_without_trigger) {
         return Algorithms.allPermutation(keys_without_trigger)
@@ -119,7 +125,7 @@ class KeyBinding {
     _split (keys) {
         return keys.toLowerCase().split(this.config['keybinding-break']).map((key) => {
             key = key.trim()
-            return this._getCode(key)
+            return this.getCode(key)
         })
     }
 
@@ -130,6 +136,8 @@ class KeyBinding {
     _bindKeyboardEvent () {
         this.listener.bind(this.inputer.$inputer, 'keydown', (event) => {
             let key_code = event.keyCode
+
+            this.lastKeycode = key_code
 
             if (this.keydown.indexOf(key_code) === -1) {
                 this.keydown.push(key_code)

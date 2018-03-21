@@ -2,17 +2,24 @@ class CursorManagerAdditional {
     constructor () {}
 
     serialize () {
-        let data = []
+        let datas = []
 
         this.traverse((cursor) => {
-            data.push(cursor.serialize())
+            datas.push(cursor.serialize())
         })
 
-        return data
+        return JSON.stringify(datas)
     }
 
-    deserialize () {
+    deserialize (datas) {
+        this.clear()
+        datas = JSON.parse(datas)
 
+        for (let i = 0; i < datas.length; i++) {
+            let data = datas[i]
+
+            this.create().deserialize(data)
+        }
     }
 }
 

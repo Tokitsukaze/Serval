@@ -1,11 +1,14 @@
 const Point = require('./Point')
+const SelectionAdditional = require('../interface/SelectionAdditional')
 const {SELECTION_TYPE: TYPE} = require('./Enum.js')
 
 const TemplateSelectionUnit = require('../template/SelectionUnit')
 const TemplateSelectionPart = require('../template/SelectionPart')
 
-class Selection {
+class Selection extends SelectionAdditional {
     constructor (config, line) {
+        super()
+
         this.$selection_unit = TemplateSelectionUnit().$selection_unit
 
         this.config = config
@@ -18,6 +21,8 @@ class Selection {
         this.base = new Point()
         this.start = new Point()
         this.end = new Point()
+
+        this._$mount()
     }
 
     updatePosition (point) {
@@ -240,6 +245,20 @@ class Selection {
 
     getEnd () {
         return this.end
+    }
+
+    $getRef () {
+        return this.$selection_unit
+    }
+
+    _$mount () {
+        let $fragment = document.createDocumentFragment()
+
+        $fragment.appendChild(this.$selection_top)
+        $fragment.appendChild(this.$selection_middle)
+        $fragment.appendChild(this.$selection_bottom)
+
+        this.$selection_unit.appendChild($fragment)
     }
 }
 
