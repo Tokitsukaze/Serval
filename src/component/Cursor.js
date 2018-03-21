@@ -274,7 +274,7 @@ class Cursor extends CursorAdditional {
         this.extraY -= effectY
         this.extraX -= effectX
 
-        this.selection.updateView()
+        this.selection.updateView(false)
     }
 
     clearSelection () {
