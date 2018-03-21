@@ -1,6 +1,8 @@
 const TemplateCursorContainer = require('../template/CursorContainer')
 const CursorManagerAdditional = require('../interface/CursorManagerAdditional')
 
+const Option = require('../enums/CursorManager')
+
 const Cursor = require('./Cursor')
 
 class CursorManager extends CursorManagerAdditional {
@@ -70,7 +72,7 @@ class CursorManager extends CursorManagerAdditional {
      * 2. 非同一行的光标，重设 logicalX 累加值
      * 3. 该次 task 后，光标在 X/Y 上的偏移量，让其累加到下一个光标上
      */
-    do (task, remove_selection = true) {
+    do (task, remove_selection = Option.REMOVE_SELECTION) {
         let cursor_list = this.cursor_list
         let length = cursor_list.length
 

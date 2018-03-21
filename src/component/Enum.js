@@ -1,11 +1,8 @@
-const Enum = {
-    SELECTION_TYPE: {
-        'NOT_EXIST': 0,
-        'SINGLE': 1,
-        'DOUBLE': 2,
-        'MULTIPLE': 3
-    }
+const TYPE = {
+    'NOT_EXIST': 1,
+    'SINGLE': 2,
+    'DOUBLE': 3,
+    'MULTIPLE': 4
 }
 
-
-module.exports = Enum
+module.exports = TYPE

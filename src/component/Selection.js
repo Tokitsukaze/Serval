@@ -1,6 +1,6 @@
 const Point = require('./Point')
 const SelectionAdditional = require('../interface/SelectionAdditional')
-const {SELECTION_TYPE: TYPE} = require('./Enum.js')
+const Type = require('../enums/Selection')
 
 const TemplateSelectionUnit = require('../template/SelectionUnit')
 const TemplateSelectionPart = require('../template/SelectionPart')
@@ -70,7 +70,7 @@ class Selection extends SelectionAdditional {
         let line_height = this.config['line-height']
 
         switch (type) {
-            case TYPE.NOT_EXIST:
+            case Type.NOT_EXIST:
                 this.$selection_top.style.display = 'none'
 
                 this.$selection_middle.style.display = 'none'
@@ -78,7 +78,7 @@ class Selection extends SelectionAdditional {
                 this.$selection_bottom.style.display = 'none'
 
                 break
-            case TYPE.SINGLE:
+            case Type.SINGLE:
                 this.$selection_top.style.cssText =
                     'top:' + this.start.psysicalY + 'px;' +
                     'right:' + (line_width - this.end.psysicalX) + 'px;' +
@@ -90,7 +90,7 @@ class Selection extends SelectionAdditional {
                 this.$selection_bottom.style.display = 'none'
 
                 break
-            case TYPE.DOUBLE:
+            case Type.DOUBLE:
                 this.$selection_top.style.cssText =
                     'top:' + this.start.psysicalY + 'px;' +
                     'right:' + 0 + 'px;' +
@@ -106,7 +106,7 @@ class Selection extends SelectionAdditional {
                     'display: block;'
 
                 break
-            case TYPE.MULTIPLE:
+            case Type.MULTIPLE:
                 this.$selection_top.style.cssText =
                     'top:' + this.start.psysicalY + 'px;' +
                     'right:' + 0 + 'px;' +
@@ -132,7 +132,7 @@ class Selection extends SelectionAdditional {
     }
 
     clear () {
-        this.type = TYPE.NOT_EXIST
+        this.type = Type.NOT_EXIST
     }
 
     checkType () {
@@ -147,15 +147,15 @@ class Selection extends SelectionAdditional {
 
         switch (minus_logicalY) {
             case 0:
-                this.type = start.logicalX === end.logicalX ? TYPE.NOT_EXIST : TYPE.SINGLE
+                this.type = start.logicalX === end.logicalX ? Type.NOT_EXIST : Type.SINGLE
                 break
 
             case 1:
-                this.type = TYPE.DOUBLE
+                this.type = Type.DOUBLE
                 break
 
             default:
-                this.type = TYPE.MULTIPLE
+                this.type = Type.MULTIPLE
                 break
         }
     }
@@ -211,7 +211,7 @@ class Selection extends SelectionAdditional {
             }
         }
 
-        this.type = TYPE.NOT_EXIST
+        this.type = Type.NOT_EXIST
 
         return {
             effectY,
@@ -220,7 +220,7 @@ class Selection extends SelectionAdditional {
     }
 
     isExist () {
-        return this.type === TYPE.NOT_EXIST ? false : true
+        return this.type === Type.NOT_EXIST ? false : true
     }
 
     setBase (point) {

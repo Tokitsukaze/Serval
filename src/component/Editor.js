@@ -26,6 +26,14 @@ const FnShiftArrowRight = require('../fns/ShiftArrowRight')
 const FnShiftArrowDown = require('../fns/ShiftArrowDown')
 const FnShiftArrowLeft = require('../fns/ShiftArrowLeft')
 
+const FnHome = require('../fns/Home')
+const FnEnd = require('../fns/End')
+
+const FnShiftEnd = require('../fns/ShiftEnd')
+const FnShiftHome = require('../fns/ShiftHome')
+
+const FnBackspace = require('../fns/Backspace')
+
 const TemplateEditor = require('../template/Editor')
 
 /**
@@ -136,9 +144,7 @@ class Editor {
     }
 
     _bindKey () {
-        this.keybinding.bind('Backspace', (event) => {
-            console.info('Backspace')
-        })
+        this.keybinding.bind('Backspace', this.fns.call('backspace'))
 
         this.keybinding.bind('Tab', () => {
             console.info('Tab')
@@ -152,13 +158,11 @@ class Editor {
             console.info('Space')
         })
 
-        this.keybinding.bind('End', () => {
-            console.info('End')
-        })
+        this.keybinding.bind('End',this.fns.call('end'))
+        this.keybinding.bind('Shift + End',this.fns.call('shift-end'))
 
-        this.keybinding.bind('Home', () => {
-            console.info('Home')
-        })
+        this.keybinding.bind('Home', this.fns.call('home'))
+        this.keybinding.bind('Shift + Home', this.fns.call('shift-home'))
 
         this.keybinding.bind('←', this.fns.call('arrow-left'))
         this.keybinding.bind('Shift + ←', this.fns.call('shift-arrow-left'))
@@ -308,6 +312,14 @@ class Editor {
         this.fns.registry(new FnShiftArrowRight())
         this.fns.registry(new FnShiftArrowDown())
         this.fns.registry(new FnShiftArrowLeft())
+
+        this.fns.registry(new FnHome())
+        this.fns.registry(new FnEnd())
+
+        this.fns.registry(new FnShiftEnd())
+        this.fns.registry(new FnShiftHome())
+
+        this.fns.registry(new FnBackspace())
     }
 
     _initHooks () {
