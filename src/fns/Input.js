@@ -4,6 +4,9 @@ class Input extends FnAdditional {
     constructor () {
         super()
         this.name = 'input'
+        this.hooks = [
+
+        ]
     }
 
     do (content) {
@@ -44,10 +47,12 @@ class Input extends FnAdditional {
     }
 
     redo (step) {
-        let {after, content} = step
+        let {before, after, content} = step
 
         let beforeY = []
         let beforeX = []
+
+        this.cursor.deserialize(before)
 
         this.cursor.traverse((cursor) => {
             beforeY.push(cursor.logicalY)

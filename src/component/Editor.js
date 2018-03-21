@@ -21,6 +21,11 @@ const FnArrowRight = require('../fns/ArrowRight')
 const FnArrowDown = require('../fns/ArrowDown')
 const FnArrowLeft = require('../fns/ArrowLeft')
 
+const FnShiftArrowUp = require('../fns/ShiftArrowUp')
+const FnShiftArrowRight = require('../fns/ShiftArrowRight')
+const FnShiftArrowDown = require('../fns/ShiftArrowDown')
+const FnShiftArrowLeft = require('../fns/ShiftArrowLeft')
+
 const TemplateEditor = require('../template/Editor')
 
 /**
@@ -156,12 +161,16 @@ class Editor {
         })
 
         this.keybinding.bind('←', this.fns.call('arrow-left'))
+        this.keybinding.bind('Shift + ←', this.fns.call('shift-arrow-left'))
 
         this.keybinding.bind('→', this.fns.call('arrow-right'))
+        this.keybinding.bind('Shift + →', this.fns.call('shift-arrow-right'))
 
         this.keybinding.bind('↑', this.fns.call('arrow-up'))
+        this.keybinding.bind('Shift + ↑', this.fns.call('shift-arrow-up'))
 
         this.keybinding.bind('↓', this.fns.call('arrow-down'))
+        this.keybinding.bind('Shift + ↓', this.fns.call('shift-arrow-down'))
 
         this.keybinding.bind('Delete', () => {
             console.info('Delete')
@@ -282,8 +291,6 @@ class Editor {
         // this.listener.bind(this.config['$serval-container'], 'paste', this._paste.bind(this))
     }
 
-
-
     _initFns () {
         this.fns.registry(new FnInput())
         this.fns.registry(new FnEnter())
@@ -296,6 +303,11 @@ class Editor {
         this.fns.registry(new FnArrowRight())
         this.fns.registry(new FnArrowDown())
         this.fns.registry(new FnArrowLeft())
+
+        this.fns.registry(new FnShiftArrowUp())
+        this.fns.registry(new FnShiftArrowRight())
+        this.fns.registry(new FnShiftArrowDown())
+        this.fns.registry(new FnShiftArrowLeft())
     }
 
     _initHooks () {

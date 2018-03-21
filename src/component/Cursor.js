@@ -19,7 +19,7 @@ class Cursor extends CursorAdditional {
         this.offsetY = 0
         this.offsetX = 0
 
-        this.arrowX = -1
+        this._arrowX = -1
 
         this._initObserver()
     }
@@ -88,10 +88,9 @@ class Cursor extends CursorAdditional {
      * issue#1
      * https://github.com/Tokitsukaze/serval/issues/1
      * 这个 0.1 是为了防止点击到最后一行的边缘处，会跳到不存在的下一行。
-     * 比如 20px 一行，那么点到 20px 处，会导致 20 / 20 = 1 也就是第2行，但是第二行还不存在，就会出错
      */
     calcLogicalY (psysicalX) {
-        return parseInt((psysicalX - .1) / this.config['line-height'])
+        return parseInt((psysicalX - .1) / this.config['line-height']) /* 1 */
     }
 
     calcPsysicalY (logicalY) {
@@ -280,25 +279,25 @@ class Cursor extends CursorAdditional {
 
     clearSelection () {
         this.selection.clear()
-        this.selection.updateView()
+        this.selection.updateView(false)
     }
 
-    /* <- arrowX -> */
+    /* <- _arrowX -> */
 
     isArrowXExist () {
-        return this.arrowX !== -1
+        return this._arrowX !== -1
     }
 
     setArrowX (psysicalX) {
-        this.arrowX = psysicalX
+        this._arrowX = psysicalX
     }
 
     resetArrowX () {
-        this.arrowX = -1
+        this._arrowX = -1
     }
 
     getArrowX () {
-        return this.arrowX
+        return this._arrowX
     }
 
     /* <- State Control -> */
