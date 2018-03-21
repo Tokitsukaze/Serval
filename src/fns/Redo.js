@@ -11,8 +11,8 @@ class Redo extends FnAdditional {
         event.preventDefault()
         event.stopPropagation()
 
-        this.tracker.undo((step) => {
-            this.get(step.name).undo.call(this, step)
+        this.tracker.redo((step) => {
+            this.get(step.name).redo.call(this, step)
         })
     }
 }
