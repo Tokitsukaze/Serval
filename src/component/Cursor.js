@@ -146,6 +146,8 @@ class Cursor extends CursorAdditional {
         }
     }
 
+    /* <- public -> */
+
     yToEnd () {
         this.logicalY = this.line.max - 1
     }
@@ -178,8 +180,8 @@ class Cursor extends CursorAdditional {
     /* <- 偏移量部分 -> */
 
     resetOffset () {
-        this.offsetX = 0
         this.offsetY = 0
+        this.offsetX = 0
     }
 
     /**
@@ -271,8 +273,8 @@ class Cursor extends CursorAdditional {
         this.setLogicalXWithoutOffset(start.logicalX)
 
         /* Temp Fix: 避免光标初始就在选区起点，所以导致不触发 offset 的问题 */
-        this.extraY -= effectY
-        this.extraX -= effectX
+        this.offsetY -= effectY
+        this.offsetX -= effectX
 
         this.selection.updateView(false)
     }

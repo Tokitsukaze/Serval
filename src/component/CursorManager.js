@@ -28,6 +28,10 @@ class CursorManager extends CursorManagerAdditional {
         this.traverse(cursor => cursor.inactive())
     }
 
+    length () {
+        return this.cursor_list.length
+    }
+
     create () {
         let cursor = this.current = new Cursor(this.config, this.line, this.detector, this.selection.create())
 
@@ -47,10 +51,6 @@ class CursorManager extends CursorManagerAdditional {
             this.cursor_list = []
             this.current = null
         })
-    }
-
-    length () {
-        return this.cursor_list.length
     }
 
     traverse (cb) {
@@ -78,8 +78,7 @@ class CursorManager extends CursorManagerAdditional {
             for (let i = length - 1; i >= 0;  i--) {
                 let cursor = cursor_list[i]
 
-                cursor.extraY = 0
-                cursor.extraX = 0
+                cursor.resetOffset()
 
                 if (cursor.isSelectionExist()) {
                     cursor.removeSelectionContent()
@@ -109,6 +108,22 @@ class CursorManager extends CursorManagerAdditional {
 
             cursor.resetOffset()
         }
+    }
+
+    sort () {
+        return this.cursor_list.sort((cursor_a, cursor_b) => {
+            let minusY = cursor_a.logicalY - cursor_b.logicalY
+
+            if (minusY === 0) {
+                return cursor_a.logicalX - cursor_b.logicalX
+            }
+
+            return minusY
+        })
+    }
+
+    detect () {
+
     }
 
     _$mount () {

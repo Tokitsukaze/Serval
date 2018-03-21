@@ -192,8 +192,8 @@ class Selection extends SelectionAdditional {
     }
 
     removeContent () {
-        let effectY = this.end.logicalX - this.start.logicalX
-        let effectX = this.end.logicalY - this.start.logicalY
+        let effectY = this.end.logicalY - this.start.logicalY
+        let effectX = this.end.logicalX - this.start.logicalX
 
         let content_list = this.line.getContent(this.start.logicalY, this.end.logicalY)
         let length = content_list.length
