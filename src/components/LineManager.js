@@ -1,5 +1,5 @@
-const TemplateLineContainer = require('../template/LineContainer')
-const TemplateLine = require('../template/Line')
+const TemplateLineContainer = require('../templates/LineContainer')
+const TemplateLine = require('../templates/Line')
 
 class LineManager {
     constructor (config, processor) {

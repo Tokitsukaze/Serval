@@ -1,6 +1,6 @@
-const CursorAdditional = require('../interface/CursorAdditional')
+const CursorAdditional = require('../interfaces/CursorAdditional')
 
-const TemplateCursor = require('../template/Cursor')
+const TemplateCursor = require('../templates/Cursor')
 
 const Point = require('./Point')
 

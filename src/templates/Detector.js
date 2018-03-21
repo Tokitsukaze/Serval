@@ -1,4 +1,4 @@
-const DOMHandler = require('../util/DOMHandler')
+const DOMHandler = require('../utils/DOMHandler')
 
 function Detector () {
     let $detector = DOMHandler.compile(

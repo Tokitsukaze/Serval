@@ -1,4 +1,4 @@
-const DOMHandler = require('../util/DOMHandler')
+const DOMHandler = require('../utils/DOMHandler')
 
 function LineContainer () {
     let $line_number_container = DOMHandler.compile(

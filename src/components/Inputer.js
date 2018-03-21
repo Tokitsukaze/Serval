@@ -1,4 +1,4 @@
-const InputerTemplate = require('../template/Inputer')
+const InputerTemplate = require('../templates/Inputer')
 
 class Inputer {
     constructor (config, listener) {

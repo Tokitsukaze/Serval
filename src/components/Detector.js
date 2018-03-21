@@ -1,4 +1,4 @@
-const TemplateDetector = require('../template/Detector')
+const TemplateDetector = require('../templates/Detector')
 
 /**
  * 用来探测字符宽度

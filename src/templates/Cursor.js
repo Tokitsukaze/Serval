@@ -1,4 +1,4 @@
-const DOMHandler = require('../util/DOMHandler')
+const DOMHandler = require('../utils/DOMHandler')
 
 function Cursor () {
     let $cursor = DOMHandler.compile(

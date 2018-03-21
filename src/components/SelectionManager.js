@@ -1,4 +1,4 @@
-const TemplateSelectionContainer = require('../template/SelectionContainer')
+const TemplateSelectionContainer = require('../templates/SelectionContainer')
 
 const Selection = require('./Selection')
 

@@ -1,4 +1,4 @@
-const FnAdditional = require('../interface/FnAdditional')
+const FnAdditional = require('../interfaces/FnAdditional')
 
 class Home extends FnAdditional {
     constructor () {

@@ -1,4 +1,4 @@
-const FnAdditional = require('../interface/FnAdditional')
+const FnAdditional = require('../interfaces/FnAdditional')
 
 class ArrowLeft extends FnAdditional {
     constructor () {

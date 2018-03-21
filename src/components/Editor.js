@@ -34,7 +34,7 @@ const FnShiftHome = require('../fns/ShiftHome')
 
 const FnBackspace = require('../fns/Backspace')
 
-const TemplateEditor = require('../template/Editor')
+const TemplateEditor = require('../templates/Editor')
 
 /**
  * About Config:
@@ -257,6 +257,8 @@ class Editor {
        function  _mouseup (event) {
             event.preventDefault()
 
+            is_mousedown = false
+
             if (!this.is_active) {
                 this.is_active = true
                 this.inputer.active()
@@ -270,8 +272,6 @@ class Editor {
 
             current.updateSelectionPosition()
             current.updateSelectionView()
-
-            is_mousedown = false
         }
 
 

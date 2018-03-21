@@ -1,4 +1,4 @@
-const PointAdditional = require('../interface/PointAdditional')
+const PointAdditional = require('../interfaces/PointAdditional')
 
 class Point extends PointAdditional {
     constructor () {

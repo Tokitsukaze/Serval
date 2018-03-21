@@ -1,5 +1,5 @@
-const TemplateCursorContainer = require('../template/CursorContainer')
-const CursorManagerAdditional = require('../interface/CursorManagerAdditional')
+const TemplateCursorContainer = require('../templates/CursorContainer')
+const CursorManagerAdditional = require('../interfaces/CursorManagerAdditional')
 
 const Option = require('../enums/CursorManager')
 

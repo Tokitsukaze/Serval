@@ -1,5 +1,5 @@
 const EventListener = require('./EventListener')
-const Algorithms = require('../util/Algorithms')
+const Algorithms = require('../utils/Algorithms')
 
 const BREAK = '-'
 

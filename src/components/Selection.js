@@ -1,9 +1,9 @@
 const Point = require('./Point')
-const SelectionAdditional = require('../interface/SelectionAdditional')
+const SelectionAdditional = require('../interfaces/SelectionAdditional')
 const Type = require('../enums/Selection')
 
-const TemplateSelectionUnit = require('../template/SelectionUnit')
-const TemplateSelectionPart = require('../template/SelectionPart')
+const TemplateSelectionUnit = require('../templates/SelectionUnit')
+const TemplateSelectionPart = require('../templates/SelectionPart')
 
 class Selection extends SelectionAdditional {
     constructor (config, line) {

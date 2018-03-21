@@ -1,4 +1,4 @@
-const DOMHandler = require('../util/DOMHandler')
+const DOMHandler = require('../utils/DOMHandler')
 
 function Line (params) {
     let $line_number = DOMHandler.compile(e('span', {'class': 'line-number'}, params.line_number + params.start_number + ''))
