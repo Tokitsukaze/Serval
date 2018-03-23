@@ -305,10 +305,12 @@ class Cursor extends CursorAdditional {
         this.selection.merge(cursor.selection)
     }
 
+    /* Test */
     lowerSelectionLayer () {
         this.selection.lowerLayer()
     }
 
+    /* Test */
     liftSelectionLayer () {
         this.selection.liftLayer()
     }
@@ -317,15 +319,19 @@ class Cursor extends CursorAdditional {
         return this.selection.getContent()
     }
 
+    /**
+     * 1. 避免光标初始就在选区起点，所以导致不触发 offset 的问题
+     * 所以只要触发了 removeSelectionContent 都视为从 end 移动 到 start，并且手动操作 offset
+     */
     removeSelectionContent () {
         let {effectX, effectY} = this.selection.removeContent()
 
         let start = this.selection.getStart()
 
+        /* 1 */
         this.setLogicalYWithoutOffset(start.logicalY)
         this.setLogicalXWithoutOffset(start.logicalX)
 
-        /* Temp Fix: 避免光标初始就在选区起点，所以导致不触发 offset 的问题 */
         this.offsetY -= effectY
         this.offsetX -= effectX
 

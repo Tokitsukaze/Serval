@@ -44,6 +44,12 @@ const FnDelete = require('../fns/Delete')
 
 const FnSelectAll = require('../fns/SelectAll')
 
+const FnCopy = require('../fns/Copy')
+const FnPaste = require('../fns/Paste')
+const FnCut = require('../fns/Cut')
+
+/* <- Template -> */
+
 const TemplateEditor = require('../templates/Editor')
 
 /**
@@ -62,11 +68,11 @@ class Editor {
 
         this.listener = new EventListener()
 
-        this.processor = new Processor()
+        this.processor = new Processor(this.config)
         this.detector = new Detector(this.config)
         this.line = new LineManager(this.config, this.processor)
         this.selection = new SelectionManager(this.config, this.line)
-        this.cursor = new CursorManager(this.config, this.line, this.detector, this.selection)
+        window.curosr = this.cursor = new CursorManager(this.config, this.line, this.detector, this.selection)
         this.inputer = new Inputer(this.config, this.listener)
         this.keybinding = new KeyBinding(this.config, this.inputer, this.listener)
 
@@ -77,7 +83,6 @@ class Editor {
 
         this._$mount()
 
-        this._initHooks()
         this._initFns()
         this._init()
         this._initReceiver()
@@ -97,6 +102,9 @@ class Editor {
             'line-height': 20,
             'line-number-width': 50,
             'line-width': 750,
+
+            'indent-type': 'space',
+            'indent-size': 2,
 
             'active': false,
             'start-from': config['start-from'] || 1,
@@ -309,8 +317,9 @@ class Editor {
             }
         }
 
-        // this.listener.bind(this.config['$serval-container'], 'copy', this._copy.bind(this))
-        // this.listener.bind(this.config['$serval-container'], 'paste', this._paste.bind(this))
+        this.listener.bind(this.config['$serval-container'], 'copy', this.fns.call('copy'))
+        this.listener.bind(this.config['$serval-container'], 'paste', this.fns.call('paste'))
+        this.listener.bind(this.config['$serval-container'], 'cut', this.fns.call('cut'))
     }
 
     _initFns () {
@@ -341,17 +350,10 @@ class Editor {
         this.fns.registry(new FnDelete())
 
         this.fns.registry(new FnSelectAll())
-    }
 
-    _initHooks () {
-        const hook_prefix = 'hook:'
-        const hooks = [
-            'input'
-        ]
-
-        hooks.forEach((hook_name) => {
-            this.listener.on(hook_prefix + hook_name, noop)
-        })
+        this.fns.registry(new FnCopy())
+        this.fns.registry(new FnPaste())
+        this.fns.registry(new FnCut())
     }
 
     _$mount () {

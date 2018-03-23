@@ -111,12 +111,17 @@ class LineManager {
             let length = content.length
 
             if (length > 2) {
-                for (let i = target_line_number, index = 1; index < length; index++) {
-                    this.create(i + index, this.processor.process(content[index]))
+                node.innerHTML = this.processor.process(before + content[0])
+
+                let index
+                for (index = 1; index < length - 1; index++) {
+                    this.create(target_line_number + index, this.processor.process(content[index]))
                 }
+
+                this.create(target_line_number + index, this.processor.process(content[index] + after))
             } else if (length === 2) {
                 node.innerHTML = this.processor.process(before + content[0])
-                this.create(target_line_number + 1, this.processor.process(content[index] + after))
+                this.create(target_line_number + 1, this.processor.process(content[1] + after))
             } else if (length === 1) {
                 node.innerHTML = this.processor.process(before + content[0] + after)
             }

@@ -13,12 +13,19 @@ class EditorFns {
         this.fns = Object.create(null)
     }
 
+    /**
+     * 1. 如果该 fn 有自定义的 push 方法，采用自定义的
+     */
     registry (fn) {
         let obj = Object.create(null)
 
         obj.value = fn
 
         if (fn.getState('track')) {
+
+            /* 1 */
+            // Building...
+
             obj.call = function (...args) {
                 let step = new Step(fn.name, this.before(), fn.do.call(this, ...args), this.after())
                 this.tracker.push(step)

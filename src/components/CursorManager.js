@@ -42,11 +42,11 @@ class CursorManager extends CursorManagerAdditional {
     }
 
     active () {
-        this.traverse(cursor => cursor.active())
+        this.traverse(cursor => cursor.active(), Option.NOT_DETECT_COLLISION)
     }
 
     inactive () {
-        this.traverse(cursor => cursor.inactive())
+        this.traverse(cursor => cursor.inactive(), Option.NOT_DETECT_COLLISION)
     }
 
     length () {
@@ -72,13 +72,17 @@ class CursorManager extends CursorManagerAdditional {
             if (cursor === target) {
                 return
             }
-
             this.selection.release(cursor.selection)
             this.template.$cursor_container.removeChild(cursor.$getRef())
-            this.cursor_list.splice(this.cursor_list.indexOf(cursor), 1)
-        })
+        }, Option.NOT_DETECT_COLLISION)
 
-        this.current = target ? target : null
+        if (target) {
+            this.cursor_list = [target]
+            this.current = target
+        } else {
+            this.cursor_list = []
+            this.current = null
+        }
     }
 
     remove (cursor) {
@@ -107,7 +111,9 @@ class CursorManager extends CursorManagerAdditional {
 
     traverse (cb, detect_selection = Option.DETECT_COLLISION) {
         let cursor_list = this.cursor_list
-        for (let i = 0; i < cursor_list.length; i++) {
+        let length = cursor_list.length
+
+        for (let i = 0; i < length; i++) {
             let cursor = cursor_list[i]
 
             this.beforeTask(cursor, i)
@@ -246,11 +252,6 @@ class CursorManager extends CursorManagerAdditional {
                 this.clear(current)
                 return
             }
-
-            if (point.less(cursor_prev.getSelectionEnd()) && point.greater(cursor_prev.getSelectionStart())) {
-                this.clear(current)
-                return
-            }
         }
 
         let cursor_next = cursor_list[index + 1]
@@ -260,7 +261,16 @@ class CursorManager extends CursorManagerAdditional {
                 this.clear(current)
                 return
             }
+        }
 
+        if (cursor_prev) {
+            if (point.less(cursor_prev.getSelectionEnd()) && point.greater(cursor_prev.getSelectionStart())) {
+                this.clear(current)
+                return
+            }
+        }
+
+        if (cursor_next) {
             if (point.less(cursor_next.getSelectionEnd()) && point.greater(cursor_next.getSelectionStart())) {
                 this.clear(current)
                 return

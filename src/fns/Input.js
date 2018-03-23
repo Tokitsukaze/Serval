@@ -4,13 +4,10 @@ class Input extends FnAdditional {
     constructor () {
         super()
         this.name = 'input'
-        this.hooks = [
-
-        ]
     }
 
     do (content) {
-        // this.emit('input:filter', content)
+        this.listener.emit('filter:input', content)
 
         this.cursor.do((cursor) => {
             let logicalY = cursor.logicalY
@@ -21,6 +18,7 @@ class Input extends FnAdditional {
             cursor.logicalX += content.length
         })
 
+        this.listener.emit('after:input', content)
         return content
     }
 

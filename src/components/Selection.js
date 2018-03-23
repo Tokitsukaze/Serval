@@ -131,10 +131,12 @@ class Selection extends SelectionAdditional {
         }
     }
 
+    /* Test */
     lowerLayer () {
         this.$selection_unit.style.zIndex = 0
     }
 
+    /* Test */
     liftLayer () {
         this.$selection_unit.style.zIndex = 1
     }

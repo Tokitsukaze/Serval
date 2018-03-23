@@ -4,7 +4,8 @@ class EventListener {
     }
 
     emit (name, ...args) {
-        this.events[name].apply(null, args)
+        let cb = this.events[name]
+        cb && cb.apply(null, args)
     }
 
     on (name, cb) {
