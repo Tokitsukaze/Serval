@@ -188,8 +188,12 @@
         }
 
         .selection-container {
-            .selection-part {
-                background-color: rgba(120, 120, 120, .5);
+            .selection-unit {
+                position: relative;
+
+                .selection-part {
+                    background-color: rgba(120, 120, 120, .5);
+                }
             }
         }
     }

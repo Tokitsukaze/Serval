@@ -4,6 +4,9 @@ const TemplateCursor = require('../templates/Cursor')
 
 const Point = require('./Point')
 
+/**
+ * 1. 用于在进行上下左右移动时的
+ */
 class Cursor extends CursorAdditional {
     constructor (config, line, detector, selection) {
         super()
@@ -172,9 +175,35 @@ class Cursor extends CursorAdditional {
         this.$cursor.className = 'fake-cursor inactive'
     }
 
+    getMoveDirection (moveUp, stand, moveDown) {
+        if (this.point.equal(this.selection.point)) {
+            stand && stand()
+        } else if (this.point.greater(this.selection.point)) {
+            moveUp && moveUp()
+        } else {
+            moveDown && moveDown()
+        }
+    }
+
+    getPosition () {
+        return this.point
+    }
+
     updateView () {
         this.$cursor.style.left = this.point.psysicalX + 'px'
         this.$cursor.style.top = this.point.psysicalY + 'px'
+    }
+
+    greater (cursor) {
+        return this.point.greater(cursor.point)
+    }
+
+    less (cursor) {
+        return this.point.less(cursor.point)
+    }
+
+    equal (cursor) {
+        return this.point.equal(cursor.point)
     }
 
     /* <- 偏移量部分 -> */
@@ -236,6 +265,18 @@ class Cursor extends CursorAdditional {
         this.selection.setEnd(point)
     }
 
+    getSelectionBase () {
+        return this.selection.getBase()
+    }
+
+    getSelectionStart () {
+        return this.selection.getStart()
+    }
+
+    getSelectionEnd () {
+        return this.selection.getEnd()
+    }
+
     moveToSelectionStart () {
         let start = this.selection.getStart()
 
@@ -258,6 +299,14 @@ class Cursor extends CursorAdditional {
 
     updateSelectionView (check_type) {
         this.selection.updateView(check_type)
+    }
+
+    lowerSelectionLayer () {
+        this.selection.lowerLayer()
+    }
+
+    liftSelectionLayer () {
+        this.selection.liftLayer()
     }
 
     getSelectionContent () {

@@ -1,3 +1,3 @@
-const Serval = require('./component/Editor.js')
+const Serval = require('./components/Editor.js')
 
 module.exports = Serval

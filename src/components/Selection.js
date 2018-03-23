@@ -131,6 +131,14 @@ class Selection extends SelectionAdditional {
         }
     }
 
+    lowerLayer () {
+        this.$selection_unit.style.zIndex = 0
+    }
+
+    liftLayer () {
+        this.$selection_unit.style.zIndex = 1
+    }
+
     clear () {
         this.type = Type.NOT_EXIST
     }

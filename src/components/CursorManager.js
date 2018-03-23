@@ -17,9 +17,28 @@ class CursorManager extends CursorManagerAdditional {
 
         this.cursor_list = []
 
-        this.current = null
-
+        this._initObserver()
         this._$mount()
+    }
+
+    _initObserver () {
+        let self = this
+
+        let _current = null
+
+        Object.defineProperty(self, 'current', {
+            set: function (cursor) {
+                // this._current && this._current.lowerSelectionLayer()
+
+                this._current = cursor
+
+                // cursor.liftSelectionLayer()
+            },
+
+            get: function () {
+                return this._current
+            }
+        })
     }
 
     active () {
@@ -45,14 +64,40 @@ class CursorManager extends CursorManagerAdditional {
 
     /**
      * 清空所有光标
+     *
+     * @param target Cursor 无需被清除的光标
      */
-    clear () {
+    clear (target) {
         this.traverse((cursor) => {
+            if (cursor === target) {
+                return
+            }
+
             this.selection.release(cursor.selection)
             this.template.$cursor_container.removeChild(cursor.$getRef())
-            this.cursor_list = []
-            this.current = null
+            this.cursor_list.splice(this.cursor_list.indexOf(cursor), 1)
         })
+
+        this.current = target ? target : null
+    }
+
+    remove (cursor) {
+        this.selection.release(cursor.selection)
+        this.template.$cursor_container.removeChild(cursor.$getRef())
+        this.cursor_list.splice(this.cursor_list.indexOf(cursor), 1)
+    }
+
+    removeAsync (cursor) {
+        setTimeout(() => {
+            this.remove(cursor)
+        })
+    }
+
+    /**
+     * Not Used
+     */
+    setCurrent (cursor) {
+        this.current = cursor
     }
 
     traverse (cb) {
@@ -113,7 +158,7 @@ class CursorManager extends CursorManagerAdditional {
     }
 
     sort () {
-        return this.cursor_list.sort((cursor_a, cursor_b) => {
+        this.cursor_list.sort((cursor_a, cursor_b) => {
             let minusY = cursor_a.logicalY - cursor_b.logicalY
 
             if (minusY === 0) {
@@ -124,8 +169,182 @@ class CursorManager extends CursorManagerAdditional {
         })
     }
 
-    detect () {
+    /**
+     * 该方法用来检测光标在鼠标刚生成时候的碰撞，由于在鼠标刚生成时的光标必定是当前光标 (current)
+     * 这里与 detectWhenMouseup 有很高的相似度，没有抽象出来是因为一些步骤会有不必要的消耗
+     *
+     * 1. 只检测光标前一个和后一个
+     */
+    detectWhenMousedown () {
+        let current = this.current
+        let cursor_list = this.cursor_list
 
+        let point = current.getPosition()
+
+        let index = cursor_list.indexOf(current)
+
+        let cursor_prev = cursor_list[index - 1]
+
+        if (cursor_prev) {
+            if (!cursor_prev.isSelectionExist() && current.equal(cursor_prev)) {
+                this.clear(current)
+                return
+            }
+
+            if (point.less(cursor_prev.getSelectionEnd()) && point.greater(cursor_prev.getSelectionStart())) {
+                this.clear(current)
+                return
+            }
+        }
+
+        let cursor_next = cursor_list[index + 1]
+
+        if (cursor_next) {
+            if (!cursor_next.isSelectionExist() && current.equal(cursor_next)) {
+                this.clear(current)
+                return
+            }
+
+            if (point.less(cursor_next.getSelectionEnd()) && point.greater(cursor_next.getSelectionStart())) {
+                this.clear(current)
+                return
+            }
+        }
+    }
+
+    /**
+     * 该方法用来检测光标在鼠标事件移动后的碰撞，由于在鼠标移动后的光标必定是当前光标 (current)
+     * 所以检测对象一定是当前光标
+     *
+     * 1. 如果当前光标往上移动，那么只检测比当前光标小的那些光标 cursor
+     *     1.1. 如果 current 比 cursor 的最大处还大，那么就不用检测了
+     *     1.2. 如果 current 比 cursor 的最小处还小，那么删除 cursor，进行下一个检测
+     *     1.3. 如果 current 与 cursor 的最小处位置相同，那么删除 cursor，检测退出
+     *     1.4. 如果 current 刚好落在 cursor 选区之间，那么移动到 cursor 的最小处，并删除 cursor，检测退出
+     * 2. 如果光标往下移动，那么只检测那些比当前光标大的那些光标 cursor
+     *     2.1. 如果 current 比 cursor 的最小处还小，那么就不用检测了
+     *     2.2. 如果 current 比 cursor 的最大处还大，那么删除 cursor，进行下一个检测
+     *     2.3. 如果 current 与 cursor 的最大处位置相同，那么删除 cursor，检测退出
+     *     2.4. 如果 current 刚好落在 cursor 选区之间，那么移动到 cursor 的最大处，并删除 cursor，检测退出
+     * 3. 如果光标没有移动，不检测
+     */
+    detectWhenMouseup () {
+        let cursor_list = this.cursor_list
+        let length = cursor_list.length
+
+        let current = this.current
+
+        let point = current.getPosition()
+        let base = current.getSelectionBase()
+
+        /* 3 */
+        if (point === base) {
+            return
+        }
+
+        let index = cursor_list.indexOf(current)
+
+        /* 1 */
+        if (point.less(base)) {
+            for (let i_start = index - 1; i_start >= 0; i_start--) {
+                let cursor = cursor_list[i_start]
+
+                if (!cursor.isSelectionExist()) {
+                    /* 1.1 */
+                    if (current.greater(cursor)) {
+                        return
+                    }
+
+                    /* 1.2 */
+                    if (current.less(cursor)) {
+                        this.removeAsync(cursor)
+                        continue
+                    }
+
+                    /* 1.3 */
+                    if (current.equal(cursor)) {
+                        this.removeAsync(cursor)
+                        return
+                    }
+                }
+
+                let start = cursor.getSelectionStart()
+                let end = cursor.getSelectionEnd()
+
+                /* 1.1 */
+                if (point.greater(end)) {
+                    return
+                }
+
+                /* 1.2 */
+                if (point.less(start)) {
+                    this.removeAsync(cursor)
+                    continue
+                }
+
+                /* 1.3 */
+                if (point.equal(start)) {
+                    this.removeAsync(cursor)
+                    return
+                }
+
+                /* 1.4 */
+                current.logicalY = start.logicalY
+                current.logicalX = start.logicalX
+                this.removeAsync(cursor)
+                return
+            }
+
+        } else {
+            for (let i_start = index + 1; i_start <= length - 1; i_start++) {
+                let cursor = cursor_list[i_start]
+
+                if (!cursor.isSelectionExist()) {
+                    /* 2.1 */
+                    if (current.less(cursor)) {
+                        return
+                    }
+
+                    /* 2.2 */
+                    if (current.greater(cursor)) {
+                        this.removeAsync(cursor)
+                        continue
+                    }
+
+                    /* 2.3 */
+                    if (current.equal(cursor)) {
+                        this.removeAsync(cursor)
+                        return
+                    }
+                }
+
+                let start = cursor.getSelectionStart()
+                let end = cursor.getSelectionEnd()
+
+                /* 2.1 */
+                if (point.less(start)) {
+                    return
+                }
+
+                /* 2.2 */
+                if (point.greater(end)) {
+                    this.removeAsync(cursor)
+                    continue
+                }
+
+                /* 2.3 */
+                if (point.equal(end)) {
+                    this.removeAsync(cursor)
+                    return
+                }
+
+                /* 2.4 */
+                current.logicalY = end.logicalY
+                current.logicalX = end.logicalX
+                this.removeAsync(cursor)
+                return
+            }
+        }
     }
 
     _$mount () {

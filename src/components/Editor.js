@@ -9,6 +9,13 @@ const Processor = require('./Processor')
 const EditorFns = require('./EditorFns')
 const Tracker = require('./Tracker')
 
+/* <- Enums -> */
+
+const EnumCommon = require('../enums/Common')
+const EnumSelection = require('../enums/Selection')
+
+/* <- Functions -> */
+
 const FnInput = require('../fns/Input')
 const FnEnter = require('../fns/Enter')
 const FnCtrlEnter = require('../fns/CtrlEnter')
@@ -33,6 +40,9 @@ const FnShiftEnd = require('../fns/ShiftEnd')
 const FnShiftHome = require('../fns/ShiftHome')
 
 const FnBackspace = require('../fns/Backspace')
+const FnDelete = require('../fns/Delete')
+
+const FnSelectAll = require('../fns/SelectAll')
 
 const TemplateEditor = require('../templates/Editor')
 
@@ -133,7 +143,7 @@ class Editor {
                 return
             }
 
-            cursor.resetArrowX()
+            cursor.resetArrowX() /* 1 */
         }
 
         this.listener.on('input', this.fns.call('input'))
@@ -176,17 +186,11 @@ class Editor {
         this.keybinding.bind('↓', this.fns.call('arrow-down'))
         this.keybinding.bind('Shift + ↓', this.fns.call('shift-arrow-down'))
 
-        this.keybinding.bind('Delete', () => {
-            console.info('Delete')
-        })
+        this.keybinding.bind('Delete', this.fns.call('delete'))
 
-        /* Select all */
-        this.keybinding.bind('Ctrl + A', () => {
-            console.info('Ctrl + A')
-        })
+        this.keybinding.bind('Ctrl + A', this.fns.call('select-all'))
 
         this.keybinding.bind('Ctrl + Z', this.fns.call('undo'))
-
         this.keybinding.bind('Ctrl + Y', this.fns.call('redo'))
     }
 
@@ -194,6 +198,10 @@ class Editor {
         this.listener.bind(this.config['$serval-container'], 'mousedown', _mousedown.bind(this))
         this.listener.bind(this.config['$serval-container'], 'mousemove', _mousemove.bind(this))
         this.listener.bind(this.config['$serval-container'], 'mouseup', _mouseup.bind(this))
+
+        /* Sign */
+        let html_key = EnumCommon.properties[EnumCommon.SIGN].asHtmlKey
+        let html_value = EnumSelection.properties[EnumSelection.SIGN].asHtmlValue
 
         /* Mouse Event Below */
         let is_mousedown = false
@@ -218,6 +226,10 @@ class Editor {
             setTimeout(() => this.cursor.active())
 
             is_mousedown = true
+            // console.info(event.target.getAttribute(html_key), html_value)
+            // if (event.target.getAttribute(html_key) === html_value) {
+            //     console.info('yes')
+            // }
 
             if (isKeydown('ctrl')) {
                 this.cursor.create()
@@ -235,6 +247,10 @@ class Editor {
             _locate(current, event, this)
 
             current.setSelectionBase()
+
+            this.cursor.sort()
+
+            this.cursor.detectWhenMousedown()
         }
 
        function  _mousemove (event) {
@@ -269,6 +285,8 @@ class Editor {
             let current = this.cursor.current
 
             _locate(current, event, this)
+
+            this.cursor.detectWhenMouseup()
 
             current.updateSelectionPosition()
             current.updateSelectionView()
@@ -320,6 +338,9 @@ class Editor {
         this.fns.registry(new FnShiftHome())
 
         this.fns.registry(new FnBackspace())
+        this.fns.registry(new FnDelete())
+
+        this.fns.registry(new FnSelectAll())
     }
 
     _initHooks () {
