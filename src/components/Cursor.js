@@ -301,6 +301,10 @@ class Cursor extends CursorAdditional {
         this.selection.updateView(check_type)
     }
 
+    mergeSelection (cursor) {
+        this.selection.merge(cursor.selection)
+    }
+
     lowerSelectionLayer () {
         this.selection.lowerLayer()
     }

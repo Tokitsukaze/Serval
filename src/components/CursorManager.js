@@ -93,14 +93,19 @@ class CursorManager extends CursorManagerAdditional {
         })
     }
 
-    /**
-     * Not Used
-     */
-    setCurrent (cursor) {
-        this.current = cursor
+    sort () {
+        this.cursor_list.sort((cursor_a, cursor_b) => {
+            let minusY = cursor_a.logicalY - cursor_b.logicalY
+
+            if (minusY === 0) {
+                return cursor_a.logicalX - cursor_b.logicalX
+            }
+
+            return minusY
+        })
     }
 
-    traverse (cb) {
+    traverse (cb, detect_selection = Option.DETECT_COLLISION) {
         let cursor_list = this.cursor_list
         for (let i = 0; i < cursor_list.length; i++) {
             let cursor = cursor_list[i]
@@ -109,6 +114,8 @@ class CursorManager extends CursorManagerAdditional {
 
             cb(cursor, i)
         }
+
+        detect_selection && this.detect()
     }
 
     /**
@@ -117,7 +124,7 @@ class CursorManager extends CursorManagerAdditional {
      * 2. 非同一行的光标，重设 logicalX 累加值
      * 3. 该次 task 后，光标在 X/Y 上的偏移量，让其累加到下一个光标上
      */
-    do (task, remove_selection = Option.REMOVE_SELECTION) {
+    do (task, remove_selection = Option.REMOVE_SELECTION, detect_selection = Option.DETECT_COLLISION) {
         let cursor_list = this.cursor_list
         let length = cursor_list.length
 
@@ -155,18 +162,67 @@ class CursorManager extends CursorManagerAdditional {
 
             cursor.resetOffset()
         }
+
+        detect_selection && this.detect()
     }
 
-    sort () {
-        this.cursor_list.sort((cursor_a, cursor_b) => {
-            let minusY = cursor_a.logicalY - cursor_b.logicalY
+    detect () {
+        let cursor_list = this.cursor_list
+        let length = cursor_list.length
 
-            if (minusY === 0) {
-                return cursor_a.logicalX - cursor_b.logicalX
+        for (let i = 0; i < length - 1; i ++) {
+            let current = cursor_list[i]
+            let next = cursor_list[i + 1]
+
+            if (!current.isSelectionExist()) {
+
+                if (!next.isSelectionExist()) {
+                    if (current.equal(next)) {
+                        this.removeAsync(current)
+                        continue
+                    }
+                } else {
+                    if (!current.getPosition().less(next.getSelectionStart())) {
+                        this.removeAsync(current)
+                        continue
+                    }
+                }
+
+            } else {
+
+                if (!next.isSelectionExist()) {
+                    if (!current.getSelectionEnd().less(next.getPosition())) {
+                        next.mergeSelection(current)
+                        next.getSelectionBase().deepCopy(current.getSelectionBase())
+
+                        this.removeAsync(current)
+                        continue
+                    }
+                } else {
+                    if (current.getSelectionEnd().greater(next.getSelectionStart())) {
+                        if (current.getSelectionStart().equal(current.getPosition())) {
+                            next.mergeSelection(current)
+
+                            next.logicalY = current.logicalY
+                            next.logicalX = current.logicalX
+                            next.setArrowX(current.getArrowX())
+
+                            this.removeAsync(current)
+                            continue
+                        }
+
+                        if (current.getSelectionEnd().equal(current.getPosition())) {
+                            next.mergeSelection(current)
+                            next.getSelectionBase().deepCopy(current.getSelectionBase())
+
+                            this.removeAsync(current)
+                            continue
+                        }
+                    }
+                }
+
             }
-
-            return minusY
-        })
+        }
     }
 
     /**
