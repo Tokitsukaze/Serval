@@ -2,6 +2,7 @@ const TemplateCursorContainer = require('../templates/CursorContainer')
 const CursorManagerAdditional = require('../interfaces/CursorManagerAdditional')
 
 const Option = require('../enums/CursorManager')
+const Field = require('../enums/Cursor')
 
 const Cursor = require('./Cursor')
 
@@ -17,28 +18,9 @@ class CursorManager extends CursorManagerAdditional {
 
         this.cursor_list = []
 
-        this._initObserver()
+        this.current = null
+
         this._$mount()
-    }
-
-    _initObserver () {
-        let self = this
-
-        let _current = null
-
-        Object.defineProperty(self, 'current', {
-            set: function (cursor) {
-                // this._current && this._current.lowerSelectionLayer()
-
-                this._current = cursor
-
-                // cursor.liftSelectionLayer()
-            },
-
-            get: function () {
-                return this._current
-            }
-        })
     }
 
     active () {
@@ -130,7 +112,7 @@ class CursorManager extends CursorManagerAdditional {
      * 2. 非同一行的光标，重设 logicalX 累加值
      * 3. 该次 task 后，光标在 X/Y 上的偏移量，让其累加到下一个光标上
      */
-    do (task, remove_selection = Option.REMOVE_SELECTION, detect_selection = Option.DETECT_COLLISION) {
+    do (task, remove_selection = Option.REMOVE_SELECTION, detect_selection = Option.DETECT_COLLISION, save_selection = Option.SAVE_SELECTION) {
         let cursor_list = this.cursor_list
         let length = cursor_list.length
 
@@ -141,6 +123,7 @@ class CursorManager extends CursorManagerAdditional {
                 cursor.resetOffset()
 
                 if (cursor.isSelectionExist()) {
+                    save_selection && (cursor.storage[Field.SAVED] = cursor.getSelectionContent())
                     cursor.removeSelectionContent()
                 }
             }

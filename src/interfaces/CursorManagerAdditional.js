@@ -1,3 +1,5 @@
+const Option = require('../enums/CursorManager')
+
 class CursorManagerAdditional {
     constructor () {}
 
@@ -6,7 +8,7 @@ class CursorManagerAdditional {
 
         this.traverse((cursor) => {
             datas.push(cursor.serialize())
-        })
+        }, Option.NOT_DETECT_COLLISION)
 
         return JSON.stringify(datas)
     }

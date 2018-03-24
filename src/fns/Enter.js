@@ -11,6 +11,7 @@ class Enter extends FnAdditional {
 
         this.cursor.do((cursor) => {
             let {before, after} = cursor.contentAround()
+
             this.line.setContent(cursor.logicalY, before)
             this.line.create(cursor.logicalY + 1, after)
 

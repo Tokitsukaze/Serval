@@ -12,6 +12,7 @@ class Tracker {
     push (step, duration = 1000) {
         let length = this.undos.length
 
+        /* 1 */
         if (length > 0) {
             let last = this.undos[length - 1]
             if (step.name === last.name && step.created - last.created < duration) {

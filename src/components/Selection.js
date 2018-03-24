@@ -207,6 +207,7 @@ class Selection extends SelectionAdditional {
 
         let content_list = this.line.getContent(this.start.logicalY, this.end.logicalY)
         let length = content_list.length
+
         let start_content = content_list[0]
         let end_content = content_list[length - 1]
         let content = start_content.substring(0, this.start.logicalX) + end_content.substring(this.end.logicalX, end_content.length)

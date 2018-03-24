@@ -3,7 +3,10 @@ const Enum = {
     NOT_REMOVE_SELECTION: false,
 
     DETECT_COLLISION: true,
-    NOT_DETECT_COLLISION: false
+    NOT_DETECT_COLLISION: false,
+
+    SAVE_SELECTION: true,
+    NOT_SAVE_SELECTION: false
 }
 
 module.exports = Enum

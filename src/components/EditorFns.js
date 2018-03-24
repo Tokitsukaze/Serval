@@ -10,6 +10,7 @@ class EditorFns {
         this.processor = processor
         this.listener = listener
         this.tracker = tracker
+
         this.fns = Object.create(null)
     }
 
@@ -27,7 +28,8 @@ class EditorFns {
             // Building...
 
             obj.call = function (...args) {
-                let step = new Step(fn.name, this.before(), fn.do.call(this, ...args), this.after())
+                let step = new Step(fn.name, this.before(), fn.do.call(this, ...args) || '', this.after())
+
                 this.tracker.push(step)
             }.bind(this)
         } else {

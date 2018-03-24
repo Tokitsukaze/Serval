@@ -1,3 +1,5 @@
+const Field = require('../enums/Cursor')
+
 class CursorAdditional {
     constructor () {}
 
@@ -6,7 +8,8 @@ class CursorAdditional {
             point: this.point,
             selection: {
                 start: this.selection.start,
-                end: this.selection.end
+                end: this.selection.end,
+                content: this.storage[Field.SAVED]
             }
         }
 
@@ -14,11 +17,12 @@ class CursorAdditional {
     }
 
     deserialize (data) {
-        let {point, selection} = data
+        let {point, selection: {start, end, content}} = data
 
         this.point.deepCopy(point)
-        this.selection.start.deepCopy(selection.start)
-        this.selection.end.deepCopy(selection.end)
+        this.selection.start.deepCopy(start)
+        this.selection.end.deepCopy(end)
+        this.storage[Field.SAVED] = content
 
         this.updateView()
         this.updateSelectionView()
