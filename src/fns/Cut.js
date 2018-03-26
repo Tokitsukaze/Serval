@@ -6,6 +6,7 @@ class Cut extends FnAdditional {
     constructor () {
         super()
         this.name = 'cut'
+        this.type = 'cut'
     }
 
     /**

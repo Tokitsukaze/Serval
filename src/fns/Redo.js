@@ -12,7 +12,7 @@ class Redo extends FnAdditional {
         event.stopPropagation()
 
         this.tracker.redo((step) => {
-            this.get(step.name).redo.call(this, step)
+            this.get(step.type).redo.call(this, step)
         })
     }
 }

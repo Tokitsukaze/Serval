@@ -17,50 +17,98 @@ class LineManager {
     }
 
     /**
-     * 创建一行
+     * 创建到目标行为止，initial_content 只作用于目标行
      */
     create (target_line_number, initial_content = '') {
-        let line = this._$line({
-            line_number: target_line_number,
-            start_number: this.config['start-from'],
-            initial_content: initial_content
-        })
+        let count = 1
+        let before = target_line_number
 
-        let current_index = target_line_number - this.config['start-from']
-
-        let $current_content = this.$getContentList()[current_index]
-        let $current_number = this.$getNumberList()[current_index]
-
-        if (this.$content_container.lastChild == $current_content) {
-            this.$number_container.appendChild(line.$line_number)
-            this.$content_container.appendChild(line.$line_content)
-        } else {
-            this.$number_container.insertBefore(line.$line_number, $current_number.nextSibling)
-            this.$content_container.insertBefore(line.$line_content, $current_content.nextSibling)
+        if (this.max < target_line_number) {
+            count = target_line_number - this.max + 1
+            before = this.max
         }
 
-        this.reorder(target_line_number)
+        let $line_number_fragment = document.createDocumentFragment()
+        let $line_content_fragment = document.createDocumentFragment()
 
-        this.max++
+        const start_from = this.config['start-from']
 
-        return 1
+        let i
+        for (i = 0; i < count - 1; i++) {
+            let line = this._$line({
+                line_number: before + i,
+                start_number: start_from,
+                initial_content: ''
+            })
+
+            $line_number_fragment.appendChild(line.$line_number)
+            $line_content_fragment.appendChild(line.$line_content)
+        }
+
+        let line = this._$line({
+            line_number: before + i,
+            start_number: start_from,
+            initial_content: initial_content || ''
+        })
+
+        $line_number_fragment.appendChild(line.$line_number)
+        $line_content_fragment.appendChild(line.$line_content)
+
+        let prev_line_number = before - 1
+        let $current_content = this.$getContentList()[prev_line_number]
+        let $current_number = this.$getNumberList()[prev_line_number]
+
+        if (this.$content_container.lastChild == $current_content) {
+            this.$number_container.appendChild($line_number_fragment)
+            this.$content_container.appendChild($line_content_fragment)
+        } else {
+            this.$number_container.insertBefore($line_number_fragment, $current_number.nextSibling)
+            this.$content_container.insertBefore($line_content_fragment, $current_content.nextSibling)
+        }
+
+        setTimeout(() => {
+            this.reorder(target_line_number)
+        })
+
+        this.max += count
+
+        return count
     }
 
     /**
-     * 单行删除
+     * 从 target_line_number 开始删除，一共删除几行（包含该行）
      */
-    delete (target_line_number) {
-        let $current_content = this.$getContentList()[target_line_number]
-        let $current_number = this.$getNumberList()[target_line_number]
+    delete (target_line_number, count = 1) {
+        let $content_list = this.$getContentList()
+        let $number_list = this.$getNumberList()
 
-        this.$content_container.removeChild($current_content)
-        this.$number_container.removeChild($current_number)
+        let delete_target_list = []
 
-        this.reorder(target_line_number)
+        let i = 0
 
-        this.max--
+        let current_line = 0
+        while (i < count) {
+            current_line = target_line_number - i
 
-        return 1
+            delete_target_list.push({
+                $content: $content_list[current_line],
+                $number: $number_list[current_line]
+            })
+
+            i++
+            this.max--
+        }
+
+        delete_target_list.forEach((delete_target) => {
+            this.$content_container.removeChild(delete_target.$content)
+            this.$number_container.removeChild(delete_target.$number)
+        })
+
+        setTimeout(() => {
+            this.reorder(current_line)
+        })
+
+        return i
     }
 
     /**
@@ -132,13 +180,18 @@ class LineManager {
         // node.innerHTML = before + content + after
     }
 
+    /**
+     * 1. 默认删除内容是该行全部
+     */
     deleteContent (target_line_number, start, end) {
         let $content_list = this.$getContentList()
 
         let node = $content_list[target_line_number]
         let content = node.textContent
 
-
+        /* 1 */
+        start = start || 0
+        end = end || content.length
 
         node.innerHTML = this.processor.process(content.substring(0, start) + content.substring(end, content.length))
 

@@ -10,8 +10,13 @@ class Input extends FnAdditional {
     constructor () {
         super()
         this.name = 'input'
+        this.type = 'input'
     }
 
+    /**
+     * 1. 因为 input 对于每个 cursor 都是输入同样的字符，所以直接返回 content 即可，
+     * 对于其他功能，由于操作的 content  可能不同，所以一般情况下会返回数组
+     */
     do (content) {
         this.listener.emit('filter:input', content)
 
@@ -32,15 +37,20 @@ class Input extends FnAdditional {
     undo (step) {
         let {before, after} = step
 
-        let contents = []
+        let selection_contents = []
 
         let afterX = []
 
         this.cursor.deserialize(after)
         this.cursor.traverse((cursor) => {
-            contents.push(cursor.storage[Field.SAVED])
+            selection_contents.push(cursor.storage[Field.SAVED])
+
+            /* different part start */
 
             afterX.push(cursor.logicalX)
+
+            /* different part End */
+
         }, Option.NOT_DETECT_COLLISION)
 
         let beforeX = []
@@ -50,13 +60,16 @@ class Input extends FnAdditional {
         }, Option.NOT_DETECT_COLLISION)
 
         this.cursor.do((cursor, index) => {
+            /* different part start */
+
             this.line.deleteContent(cursor.logicalY, beforeX[index], afterX[index])
 
-            if (cursor.isSelectionExist()) {
-                let start = cursor.getSelectionStart()
-                let content = contents[index]
+            /* different part End */
 
-                this.line.insertContent(start.logicalY, start.logicalX, content)
+            if (cursor.isSelectionExist()) {
+                let {logicalY, logicalX} = cursor.getSelectionStart()
+
+                this.line.insertContent(logicalY, logicalX, selection_contents[index])
             }
         }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
 
@@ -79,9 +92,16 @@ class Input extends FnAdditional {
         this.cursor.deserialize(after)
 
         this.cursor.do((cursor, index) => {
-            cursor.removeSelectionContent(Option.NOT_MOVE_TO_START)
+            if (cursor.isSelectionExist()) {
+                cursor.removeSelectionContent(Option.NOT_MOVE_TO_START)
+            }
+
+            /* different part start */
 
             this.line.insertContent(beforeY[index], beforeX[index], content)
+
+            /* different part End */
+
         }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
 
         this.cursor.active()

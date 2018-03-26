@@ -1,6 +1,6 @@
 class Step {
-    constructor (name, before, content, after) {
-        this.name = name
+    constructor (type, before, content, after) {
+        this.type = type
         this.before = before
         this.content = content
         this.after = after
@@ -11,6 +11,7 @@ class Step {
     merge (step, type) {
         this.content += step.content
         this.after = step.after
+
         step = null
     }
 }

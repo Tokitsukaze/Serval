@@ -4,26 +4,10 @@ class Tracker {
         this.redos = []
     }
 
-    /**
-     * 1.
-     * issue#2
-     * https://github.com/Tokitsukaze/serval/issues/2
-     */
-    push (step, duration = 1000) {
+    push (step, handler) {
         let length = this.undos.length
 
-        /* 1 */
-        if (length > 0) {
-            let last = this.undos[length - 1]
-            if (step.name === last.name && step.created - last.created < duration) {
-                last.merge(step)
-                last.updated = new Date().getTime()
-
-                return
-            }
-        }
-
-        this.undos.push(step)
+        handler(step, this.undos, this.redos)
     }
 
     undo (fn) {

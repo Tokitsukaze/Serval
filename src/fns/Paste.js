@@ -4,6 +4,7 @@ class Paste extends FnAdditional {
     constructor () {
         super()
         this.name = 'paste'
+        this.type = 'paste'
     }
 
     do (event) {

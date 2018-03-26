@@ -12,7 +12,7 @@ class Undo extends FnAdditional {
         event.stopPropagation()
 
         this.tracker.undo((step) => {
-            this.get(step.name).undo.call(this, step)
+            this.get(step.type).undo.call(this, step)
         })
     }
 }

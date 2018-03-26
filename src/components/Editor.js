@@ -70,13 +70,13 @@ class Editor {
 
         this.processor = new Processor(this.config)
         this.detector = new Detector(this.config)
-        this.line = new LineManager(this.config, this.processor)
+        window.line = this.line = new LineManager(this.config, this.processor)
         this.selection = new SelectionManager(this.config, this.line)
-        window.curosr = this.cursor = new CursorManager(this.config, this.line, this.detector, this.selection)
+        window.cursor = this.cursor = new CursorManager(this.config, this.line, this.detector, this.selection)
         this.inputer = new Inputer(this.config, this.listener)
         this.keybinding = new KeyBinding(this.config, this.inputer, this.listener)
 
-        this.tracker = new Tracker(this.config)
+        window.tracker = this.tracker = new Tracker(this.config)
         this.fns = new EditorFns(this.line, this.cursor, this.processor, this.listener, this.tracker)
 
         this.is_active = false
@@ -140,6 +140,46 @@ class Editor {
         this.inputer.inactive()
         this.cursor.inactive()
     }
+
+    _init () {
+        this.line.create(0, this.config['initial-content'])
+        this.cursor.create()
+    }
+
+    _initFns () {
+        this.fns.registry(new FnInput())
+        this.fns.registry(new FnEnter())
+        this.fns.registry(new FnCtrlEnter())
+
+        this.fns.registry(new FnUndo())
+        this.fns.registry(new FnRedo())
+
+        this.fns.registry(new FnArrowUp())
+        this.fns.registry(new FnArrowRight())
+        this.fns.registry(new FnArrowDown())
+        this.fns.registry(new FnArrowLeft())
+
+        this.fns.registry(new FnShiftArrowUp())
+        this.fns.registry(new FnShiftArrowRight())
+        this.fns.registry(new FnShiftArrowDown())
+        this.fns.registry(new FnShiftArrowLeft())
+
+        this.fns.registry(new FnHome())
+        this.fns.registry(new FnEnd())
+
+        this.fns.registry(new FnShiftEnd())
+        this.fns.registry(new FnShiftHome())
+
+        this.fns.registry(new FnBackspace())
+        this.fns.registry(new FnDelete())
+
+        this.fns.registry(new FnSelectAll())
+
+        this.fns.registry(new FnCopy())
+        this.fns.registry(new FnPaste())
+        this.fns.registry(new FnCut())
+    }
+
 
     /**
      * 1. 重设 cursor.arrowX
@@ -322,47 +362,8 @@ class Editor {
         this.listener.bind(this.config['$serval-container'], 'cut', this.fns.call('cut'))
     }
 
-    _initFns () {
-        this.fns.registry(new FnInput())
-        this.fns.registry(new FnEnter())
-        this.fns.registry(new FnCtrlEnter())
-
-        this.fns.registry(new FnUndo())
-        this.fns.registry(new FnRedo())
-
-        this.fns.registry(new FnArrowUp())
-        this.fns.registry(new FnArrowRight())
-        this.fns.registry(new FnArrowDown())
-        this.fns.registry(new FnArrowLeft())
-
-        this.fns.registry(new FnShiftArrowUp())
-        this.fns.registry(new FnShiftArrowRight())
-        this.fns.registry(new FnShiftArrowDown())
-        this.fns.registry(new FnShiftArrowLeft())
-
-        this.fns.registry(new FnHome())
-        this.fns.registry(new FnEnd())
-
-        this.fns.registry(new FnShiftEnd())
-        this.fns.registry(new FnShiftHome())
-
-        this.fns.registry(new FnBackspace())
-        this.fns.registry(new FnDelete())
-
-        this.fns.registry(new FnSelectAll())
-
-        this.fns.registry(new FnCopy())
-        this.fns.registry(new FnPaste())
-        this.fns.registry(new FnCut())
-    }
-
     _$mount () {
         this.config['$target'].appendChild(this.$template.$serval)
-    }
-
-    _init () {
-        this.line.create(0, this.config['initial-content'])
-        this.cursor.create()
     }
 }
 

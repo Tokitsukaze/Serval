@@ -4,6 +4,7 @@ class CtrlEnter extends FnAdditional {
     constructor () {
         super()
         this.name = 'ctrl-enter'
+        this.type = 'ctrl-enter'
     }
 
     do (event) {

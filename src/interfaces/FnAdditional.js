@@ -1,12 +1,14 @@
 class FnAdditional {
     constructor () {
         this.name = null
+        this.type = null
+
         this.track = null
 
         this.enableTrack()
     }
 
-    getState (name) {
+    getState(name) {
         return this[name]
     }
 
@@ -16,6 +18,30 @@ class FnAdditional {
 
     disableTrack () {
         this.track = false
+    }
+
+    /**
+     * 1.
+     * issue#2
+     * https://github.com/Tokitsukaze/serval/issues/2
+     */
+    handler (step, undos) {
+        let length = undos.length
+
+        /* 1 */
+        if (length > 0) {
+            let last = undos[length - 1]
+
+            if (step.type === last.type && step.created - last.created < 1000) {
+                last.merge(step)
+
+                last.updated = new Date().getTime()
+
+                return
+            }
+        }
+
+        undos.push(step)
     }
 
     do () {
@@ -32,6 +58,14 @@ class FnAdditional {
         if (this.track) {
             throw Error('undo must be implemented if track is true')
         }
+    }
+
+    before () {
+        return this.cursor.serialize()
+    }
+
+    after () {
+        return this.cursor.serialize()
     }
 }
 

@@ -91,16 +91,26 @@ class CursorManager extends CursorManagerAdditional {
         })
     }
 
-    traverse (cb, detect_selection = Option.DETECT_COLLISION) {
+    traverse (cb, detect_selection = Option.DETECT_COLLISION, order_type = Option.ASC) {
         let cursor_list = this.cursor_list
         let length = cursor_list.length
 
-        for (let i = 0; i < length; i++) {
-            let cursor = cursor_list[i]
+        if (order_type === Option.ASC) {
+            for (let i = 0; i < length; i++) {
+                let cursor = cursor_list[i]
 
-            this.beforeTask(cursor, i)
+                this.beforeTask(cursor, i)
 
-            cb(cursor, i)
+                cb(cursor, i)
+            }
+        } else {
+            for (let i = length - 1; i >= 0; i--) {
+                let cursor = cursor_list[i]
+
+                this.beforeTask(cursor, i)
+
+                cb(cursor, i)
+            }
         }
 
         detect_selection && this.detect()
@@ -126,6 +136,10 @@ class CursorManager extends CursorManagerAdditional {
                     save_selection && (cursor.storage[Field.SAVED] = cursor.getSelectionContent())
                     cursor.removeSelectionContent()
                 }
+            }
+        } else {
+            for (let i = length - 1; i >= 0; i--) {
+                cursor_list[i].resetOffset()
             }
         }
 

@@ -27,24 +27,20 @@ class EditorFns {
             /* 1 */
             // Building...
 
-            obj.call = function (...args) {
-                let step = new Step(fn.name, this.before(), fn.do.call(this, ...args) || '', this.after())
+            let _before = fn.before.bind(this)
+            let _after = fn.after.bind(this)
+            let _do = fn.do.bind(this)
 
-                this.tracker.push(step)
+            obj.call = function (...args) {
+                let step = new Step(fn.type, _before(), _do(...args), _after())
+
+                this.tracker.push(step, fn.handler)
             }.bind(this)
         } else {
             obj.call = fn.do.bind(this)
         }
 
         this.fns[fn.name] = obj
-    }
-
-    before () {
-        return this.cursor.serialize()
-    }
-
-    after () {
-        return this.cursor.serialize()
     }
 
     traverse (cb) {

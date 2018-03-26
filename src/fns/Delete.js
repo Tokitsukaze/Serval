@@ -6,8 +6,7 @@ class Delete extends FnAdditional {
     constructor () {
         super()
         this.name = 'delete'
-        this.hooks = [
-        ]
+        this.type = 'delete'
     }
 
     do (event) {

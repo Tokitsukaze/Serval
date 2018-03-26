@@ -1,13 +1,13 @@
 const FnAdditional = require('../interfaces/FnAdditional')
 
 const Option = require('../enums/CursorManager')
+const Field = require('../enums/Cursor')
 
 class Backspace extends FnAdditional {
     constructor () {
         super()
         this.name = 'backspace'
-        this.hooks = [
-        ]
+        this.type = 'backspace'
     }
 
     /**
@@ -20,14 +20,13 @@ class Backspace extends FnAdditional {
         /* 1 */
         let handled = false
 
-        this.cursor.traverse((cursor) => {
-            cursor.resetOffset()
-
+        this.cursor.do((cursor) => {
             if (cursor.isSelectionExist()) {
+                cursor.storage[Field.SAVED] = cursor.getSelectionContent()
                 cursor.removeSelectionContent()
                 handled = true
             }
-        })
+        }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
 
         if (!handled) {
             this.cursor.do((cursor) => {

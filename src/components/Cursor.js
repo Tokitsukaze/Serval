@@ -251,6 +251,18 @@ class Cursor extends CursorAdditional {
         }
     }
 
+    contetBefore () {
+        let content = this.line.getContent(this.logicalY)
+
+        return content.substring(0, this.logicalX)
+    }
+
+    contentAfter () {
+        let content = this.line.getContent(this.logicalY)
+
+        return content.substring(this.logicalX, content.length)
+    }
+
     /* <- 选区部分 -> */
 
     isSelectionExist () {
