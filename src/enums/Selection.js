@@ -4,13 +4,8 @@ const Enum = {
     DOUBLE: 3,
     MULTIPLE: 4,
 
-    SIGN: 10,
-
-    properties: {
-        10: {
-            asHtmlValue: 'selection'
-        }
-    }
+    APPEND_AFTER: true,
+    NOT_APPEND_AFTER: false
 }
 
 module.exports = Enum

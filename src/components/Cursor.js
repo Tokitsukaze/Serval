@@ -2,7 +2,10 @@ const CursorAdditional = require('../interfaces/CursorAdditional')
 
 const TemplateCursor = require('../templates/Cursor')
 
-const Option = require('../enums/Cursor')
+const CursorOption = require('../enums/Cursor')
+const SelectionOption = require('../enums/Selection')
+
+const Option = Object.assign({}, CursorOption, SelectionOption)
 
 const Point = require('./Point')
 
@@ -339,8 +342,8 @@ class Cursor extends CursorAdditional {
      * 1. 避免光标初始就在选区起点，所以导致不触发 offset 的问题
      * 所以只要触发了 removeSelectionContent 都视为从 end 移动 到 start，并且手动操作 offset
      */
-    removeSelectionContent (move_to_start = Option.MOVE_TO_START) {
-        let {effectX, effectY} = this.selection.removeContent()
+    removeSelectionContent (move_to_start = Option.MOVE_TO_START, append_after = Option.APPEND_AFTER) {
+        let {effectX, effectY} = this.selection.removeContent(append_after)
 
         if (move_to_start)  {
             let start = this.selection.getStart()

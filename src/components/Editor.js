@@ -9,11 +9,6 @@ const Processor = require('./Processor')
 const EditorFns = require('./EditorFns')
 const Tracker = require('./Tracker')
 
-/* <- Enums -> */
-
-const EnumCommon = require('../enums/Common')
-const EnumSelection = require('../enums/Selection')
-
 /* <- Functions -> */
 
 const FnInput = require('../fns/Input')
@@ -247,10 +242,6 @@ class Editor {
         this.listener.bind(this.config['$serval-container'], 'mousemove', _mousemove.bind(this))
         this.listener.bind(this.config['$serval-container'], 'mouseup', _mouseup.bind(this))
 
-        /* Sign */
-        let html_key = EnumCommon.properties[EnumCommon.SIGN].asHtmlKey
-        let html_value = EnumSelection.properties[EnumSelection.SIGN].asHtmlValue
-
         /* Mouse Event Below */
         let is_mousedown = false
 
@@ -274,10 +265,6 @@ class Editor {
             setTimeout(() => this.cursor.active())
 
             is_mousedown = true
-            // console.info(event.target.getAttribute(html_key), html_value)
-            // if (event.target.getAttribute(html_key) === html_value) {
-            //     console.info('yes')
-            // }
 
             if (isKeydown('ctrl')) {
                 this.cursor.create()

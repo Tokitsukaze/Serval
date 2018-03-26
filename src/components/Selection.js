@@ -5,6 +5,8 @@ const Type = require('../enums/Selection')
 const TemplateSelectionUnit = require('../templates/SelectionUnit')
 const TemplateSelectionPart = require('../templates/SelectionPart')
 
+const Option = require('../enums/Selection')
+
 class Selection extends SelectionAdditional {
     constructor (config, line) {
         super()
@@ -131,20 +133,6 @@ class Selection extends SelectionAdditional {
         }
     }
 
-    /* Test */
-    lowerLayer () {
-        this.$selection_unit.style.zIndex = 0
-    }
-
-    /* Test */
-    liftLayer () {
-        this.$selection_unit.style.zIndex = 1
-    }
-
-    clear () {
-        this.type = Type.NOT_EXIST
-    }
-
     checkType () {
         let start = this.start
         let end = this.end
@@ -168,6 +156,20 @@ class Selection extends SelectionAdditional {
                 this.type = Type.MULTIPLE
                 break
         }
+    }
+
+    /* Test */
+    lowerLayer () {
+        this.$selection_unit.style.zIndex = 0
+    }
+
+    /* Test */
+    liftLayer () {
+        this.$selection_unit.style.zIndex = 1
+    }
+
+    clear () {
+        this.type = Type.NOT_EXIST
     }
 
     merge (selection) {
@@ -201,7 +203,7 @@ class Selection extends SelectionAdditional {
         return content_list
     }
 
-    removeContent () {
+    removeContent (append_after = Option.APPEND_AFTER) {
         let effectY = this.end.logicalY - this.start.logicalY
         let effectX = this.end.logicalX - this.start.logicalX
 
@@ -209,8 +211,14 @@ class Selection extends SelectionAdditional {
         let length = content_list.length
 
         let start_content = content_list[0]
-        let end_content = content_list[length - 1]
-        let content = start_content.substring(0, this.start.logicalX) + end_content.substring(this.end.logicalX, end_content.length)
+
+        let content
+        if (append_after === Option.NOT_APPEND_AFTER) {
+            content = start_content.substring(0, this.start.logicalX)
+        } else {
+            let end_content = content_list[length - 1]
+            content = start_content.substring(0, this.start.logicalX) + end_content.substring(this.end.logicalX, end_content.length)
+        }
 
         this.line.setContent(this.start.logicalY, content)
 

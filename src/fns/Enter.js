@@ -2,9 +2,10 @@ const FnAdditional = require('../interfaces/FnAdditional')
 
 const CursorOption = require('../enums/Cursor')
 const CursorManagerOption = require('../enums/CursorManager')
+const SelectionOption = require('../enums/Selection')
 const Field = require('../enums/Cursor')
 
-const Option = Object.assign({}, CursorOption, CursorManagerOption)
+const Option = Object.assign({}, CursorOption, CursorManagerOption, SelectionOption)
 
 class Enter extends FnAdditional {
     constructor () {
@@ -106,7 +107,8 @@ class Enter extends FnAdditional {
         this.cursor.traverse((cursor) => {
             /* different part start */
 
-            this.line.deleteContent(cursor.logicalY, cursor.logicalX)
+            // let {logicalY, logicalX} = cursor.getSelectionEnd()
+            // this.line.deleteContent(logicalY, logicalX)
 
             /* different part End */
         })
@@ -115,7 +117,7 @@ class Enter extends FnAdditional {
 
         this.cursor.do((cursor, index) => {
             if (cursor.isSelectionExist()) {
-                cursor.removeSelectionContent(Option.NOT_MOVE_TO_START)
+                cursor.removeSelectionContent(Option.NOT_MOVE_TO_START, Option.NOT_APPEND_AFTER)
             }
 
             /* different part start */
