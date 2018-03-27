@@ -21,10 +21,7 @@ class Input extends FnAdditional {
         this.listener.emit('filter:input', content)
 
         this.cursor.do((cursor) => {
-            let logicalY = cursor.logicalY
-            let logicalX = cursor.logicalX
-
-            this.line.insertContent(logicalY, logicalX, content)
+            this.line.insertContent(cursor.logicalY,  cursor.logicalX, content)
 
             cursor.logicalX += content.length
         })
@@ -74,32 +71,11 @@ class Input extends FnAdditional {
     redo (step) {
         let {before, after, content} = step
 
-        let beforeY = []
-        let beforeX = []
+        this.cursor.deserialize(before).do((cursor, index) => {
+            this.line.insertContent(cursor.logicalY, cursor.logicalX, content)
 
-        this.cursor.deserialize(before)
-
-        this.cursor.traverse((cursor) => {
-            beforeY.push(cursor.logicalY)
-            beforeX.push(cursor.logicalX)
-        }, Option.NOT_DETECT_COLLISION)
-
-        this.cursor.deserialize(after)
-
-        this.cursor.traverse((cursor, index) => {
-            if (cursor.isSelectionExist()) {
-                cursor.removeSelectionContent(Option.NOT_MOVE_TO_START)
-            }
-
-            /* different part start */
-
-            this.line.insertContent(beforeY[index], beforeX[index], content)
-
-            /* different part End */
-
-        }, Option.NOT_DETECT_COLLISION)
-
-        this.cursor.active()
+            cursor.logicalX += content.length
+        })
     }
 }
 
