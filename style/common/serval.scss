@@ -120,8 +120,8 @@
 
 
 .theme-harusame {
-    background: url(./harusame_nyumu.png);
-    // background-color: rgba(black, .8);
+    // background: url(./harusame_nyumu.png);
+    background-color: rgba(black, .8);
 
     .serval-container {
 
@@ -133,7 +133,7 @@
             font-family: Consolas;
             .line-number-container {
                 .line-number {
-                    color: white;
+                    color: #c0b3c5;
                     cursor: default;
                 }
             }

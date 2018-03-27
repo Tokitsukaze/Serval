@@ -34,44 +34,39 @@ class Input extends FnAdditional {
         return content
     }
 
+    /**
+     * 1. 先在 after 状态下，删除 input 增加的字符，此时状态还原为【刚删除选区的状态】
+     * 2. 所以此时再降序遍历，以便处理 offset 的问题，增加选区内容
+     * 3. 返回到 before 状态
+     */
     undo (step) {
-        let {before, after} = step
+        let {before, after, content} = step
 
-        let selection_contents = []
+        let is_selection_exist_before = []
 
-        let afterX = []
+        this.cursor.deserialize(before, Option.DATA_ONLY)
 
-        this.cursor.deserialize(after)
-        this.cursor.traverse((cursor) => {
-            selection_contents.push(cursor.storage[Field.SAVED])
+        this.cursor.pureTraverse((cursor, index) => {
+            is_selection_exist_before.push(cursor.isSelectionExist())
+        })
 
-            /* different part start */
+        let content_length = content.length
 
-            afterX.push(cursor.logicalX)
+        this.cursor.deserialize(after).do((cursor, index) => {
 
-            /* different part End */
+            this.line.deleteContent(cursor.logicalY, cursor.logicalX - content_length, cursor.logicalX)
+            cursor.logicalX -= content_length
 
-        }, Option.NOT_DETECT_COLLISION)
-
-        let beforeX = []
-        this.cursor.deserialize(before)
-        this.cursor.traverse((cursor) => {
-            beforeX.push(cursor.logicalX)
-        }, Option.NOT_DETECT_COLLISION)
-
-        this.cursor.do((cursor, index) => {
-            /* different part start */
-
-            this.line.deleteContent(cursor.logicalY, beforeX[index], afterX[index])
-
-            /* different part End */
-
-            if (cursor.isSelectionExist()) {
-                let {logicalY, logicalX} = cursor.getSelectionStart()
-
-                this.line.insertContent(logicalY, logicalX, selection_contents[index])
-            }
         }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
+
+        this.cursor.pureTraverse((cursor, index) => {
+            if (is_selection_exist_before[index]) {
+                let selection_content = cursor.storage[Field.SAVED]
+                this.line.insertContent(cursor.logicalY, cursor.logicalX, selection_content)
+            }
+        }, Option.DESC)
+
+        this.cursor.deserialize(before)
 
         this.cursor.active()
     }
@@ -87,11 +82,11 @@ class Input extends FnAdditional {
         this.cursor.traverse((cursor) => {
             beforeY.push(cursor.logicalY)
             beforeX.push(cursor.logicalX)
-        })
+        }, Option.NOT_DETECT_COLLISION)
 
         this.cursor.deserialize(after)
 
-        this.cursor.do((cursor, index) => {
+        this.cursor.traverse((cursor, index) => {
             if (cursor.isSelectionExist()) {
                 cursor.removeSelectionContent(Option.NOT_MOVE_TO_START)
             }
@@ -102,7 +97,7 @@ class Input extends FnAdditional {
 
             /* different part End */
 
-        }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
+        }, Option.NOT_DETECT_COLLISION)
 
         this.cursor.active()
     }

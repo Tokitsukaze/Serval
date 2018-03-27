@@ -1,11 +1,11 @@
 const Point = require('./Point')
 const SelectionAdditional = require('../interfaces/SelectionAdditional')
 const Type = require('../enums/Selection')
+const Option = require('../enums/Selection')
 
 const TemplateSelectionUnit = require('../templates/SelectionUnit')
 const TemplateSelectionPart = require('../templates/SelectionPart')
 
-const Option = require('../enums/Selection')
 
 class Selection extends SelectionAdditional {
     constructor (config, line) {
@@ -23,6 +23,8 @@ class Selection extends SelectionAdditional {
         this.base = new Point()
         this.start = new Point()
         this.end = new Point()
+
+        this.type = Type.NOT_EXIST
 
         this._$mount()
     }
@@ -62,7 +64,7 @@ class Selection extends SelectionAdditional {
         }
     }
 
-    updateView (check_type = true) {
+    updateView (check_type = Option.CHECK_TYPE) {
         check_type && this.checkType()
 
         let type = this.type

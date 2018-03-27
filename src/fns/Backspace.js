@@ -10,6 +10,26 @@ class Backspace extends FnAdditional {
         this.type = 'backspace'
     }
 
+    handler (step, undos, redos) {
+        let length = undos.length
+
+        /* 1 */
+        if (length > 0) {
+            let last = undos[length - 1]
+
+            if (step.type === last.type && step.created - last.created < 1000) {
+                last.content.effect_count += step.content.effect_count
+                last.after = step.after
+
+                last.updated = new Date().getTime()
+
+                return
+            }
+        }
+
+        undos.push(step)
+    }
+
     /**
      * 1. 对于一次 Backspace，只处理那些有选区的光标，其他的不做删除操作
      * 2. 光标在大于第一行的行首处，删除该行，并将光标后的内容剪贴到上一行
@@ -50,47 +70,13 @@ class Backspace extends FnAdditional {
     }
 
     undo (step) {
-        let {before, after, content} = step
+        let {before} = step
 
-        let beforeY = []
-        let beforeX = []
-
-        this.cursor.deserialize(before)
-
-        this.cursor.traverse((cursor) => {
-            beforeY.push(cursor.logicalY)
-            beforeX.push(cursor.logicalX)
-        })
-
-        this.cursor.deserialize(after)
-
-        this.cursor.do((cursor, index) => {
-            this.line.insertContent(beforeY[index], beforeX[index], content)
-        })
-
-        this.cursor.active()
+        cursor.deserialize(before)
     }
 
     redo (step) {
-        let {before, after} = step
 
-        let afterX = []
-        this.cursor.deserialize(after)
-        this.cursor.traverse((cursor) => {
-            afterX.push(cursor.logicalX)
-        })
-
-        let beforeX = []
-        this.cursor.deserialize(before)
-        this.cursor.traverse((cursor) => {
-            beforeX.push(cursor.logicalX)
-        })
-
-        this.cursor.do((cursor, index) => {
-            this.line.deleteContent(cursor.logicalY, beforeX[index], afterX[index])
-        })
-
-        this.cursor.active()
     }
 }
 

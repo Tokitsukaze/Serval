@@ -91,6 +91,21 @@ class CursorManager extends CursorManagerAdditional {
         })
     }
 
+    pureTraverse(cb, order_type = Option.ASC) {
+        let cursor_list = this.cursor_list
+        let length = cursor_list.length
+
+        if (order_type === Option.ASC) {
+            for (let i = 0; i < length; i++) {
+                cb(cursor_list[i], i)
+            }
+        } else {
+            for (let i = length - 1; i >= 0; i--) {
+                cb(cursor_list[i], i)
+            }
+        }
+    }
+
     traverse (cb, detect_selection = Option.DETECT_COLLISION, order_type = Option.ASC) {
         let cursor_list = this.cursor_list
         let length = cursor_list.length

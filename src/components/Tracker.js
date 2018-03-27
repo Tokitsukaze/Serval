@@ -8,6 +8,8 @@ class Tracker {
         let length = this.undos.length
 
         handler(step, this.undos, this.redos)
+
+        this.redos = []
     }
 
     undo (fn) {
