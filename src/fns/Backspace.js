@@ -51,9 +51,9 @@ class Backspace extends FnAdditional {
         if (!handled) {
             this.cursor.do((cursor) => {
                 if (cursor.logicalX > 0) {
-                    this.line.deleteContent(cursor.logicalY, cursor.logicalX - 1, cursor.logicalX)
+                    let content = this.line.deleteContent(cursor.logicalY, cursor.logicalX - 1, cursor.logicalX)
                     cursor.logicalX -= 1
-                    return
+                    return content.substring(cursor.logicalX - 1, cursor.logicalX)
                 }
 
                 /* 2 */
@@ -63,7 +63,7 @@ class Backspace extends FnAdditional {
                     cursor.logicalY -= 1
                     cursor.xToEnd()
                     this.line.insertContent(cursor.logicalY, cursor.logicalX, content.after)
-                    return
+                    return ''
                 }
             }, Option.NOT_REMOVE_SELECTION)
         }

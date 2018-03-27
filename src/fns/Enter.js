@@ -46,7 +46,7 @@ class Enter extends FnAdditional {
             let {before, after} = cursor.contentAround()
 
             this.line.setContent(cursor.logicalY, before)
-            this.line.create(cursor.logicalY + 1, after)
+            this.line.create(cursor.logicalY, 1, after)
 
             cursor.logicalY += 1
             cursor.xToStart()
@@ -59,42 +59,40 @@ class Enter extends FnAdditional {
         return result
     }
 
+    /**
+      * 思路同 input 的 undo
+      * 1. 不同的是，在 after 状态下，直接删除该行就可以了。
+      * 2. 不过考虑到 step 合并，需要删除的行将会是
+      */
     undo (step) {
         let {before, after, content: {effect_content, effect_count}} = step
 
-        let selection_contents = []
+        let is_selection_exist_before = []
 
-        this.cursor.deserialize(after)
-        this.cursor.traverse((cursor) => {
-            selection_contents.push(cursor.storage[Field.SAVED])
+        this.cursor.deserialize(before, Option.DATA_ONLY)
 
-            /* different part start */
+        this.cursor.pureTraverse((cursor, index) => {
+            is_selection_exist_before.push(cursor.isSelectionExist())
+        })
+
+        this.cursor.deserialize(after).do((cursor, index) => {
 
             this.line.delete(cursor.logicalY, effect_count)
+            cursor.logicalY -= effect_count
+            cursor.xToEnd()
+            this.line.insertContent(cursor.logicalY, cursor.logicalX, effect_content[index])
 
-            /* different part End */
-
-        }, Option.NOT_DETECT_COLLISION, Option.DESC)
-
-        let beforeX = []
-        this.cursor.deserialize(before)
-        this.cursor.traverse((cursor) => {
-            beforeX.push(cursor.logicalX)
-        }, Option.NOT_DETECT_COLLISION)
-
-        this.cursor.do((cursor, index) => {
-            /* different part start */
-
-            this.line.insertContent(cursor.logicalY, beforeX[index], effect_content[index])
-
-            /* different part End */
-
-            if (cursor.isSelectionExist()) {
-                let {logicalY, logicalX} = cursor.getSelectionStart()
-
-                this.line.insertContent(logicalY, logicalX, selection_contents[index])
-            }
         }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
+
+        this.cursor.pureTraverse((cursor, index) => {
+            if (is_selection_exist_before[index]) {
+                let selection_content = cursor.storage[Field.SAVED]
+
+                this.line.insertContent(cursor.logicalY, cursor.logicalX, selection_content)
+            }
+        }, Option.DESC)
+
+        this.cursor.deserialize(before)
 
         this.cursor.active()
     }
@@ -104,31 +102,17 @@ class Enter extends FnAdditional {
 
         this.cursor.deserialize(before)
 
-        this.cursor.traverse((cursor) => {
-            /* different part start */
+        this.cursor.do((cursor, index) => {
+            let {before, after} = cursor.contentAround()
 
-            // let {logicalY, logicalX} = cursor.getSelectionEnd()
-            // this.line.deleteContent(logicalY, logicalX)
+            this.line.setContent(cursor.logicalY, before)
+            this.line.create(cursor.logicalY, effect_count, after)
 
-            /* different part End */
+            cursor.logicalY += effect_count
+            cursor.xToStart()
         })
 
         this.cursor.deserialize(after)
-
-        this.cursor.do((cursor, index) => {
-            if (cursor.isSelectionExist()) {
-                cursor.removeSelectionContent(Option.NOT_MOVE_TO_START, Option.NOT_APPEND_AFTER)
-            }
-
-            /* different part start */
-
-            this.line.create(cursor.logicalY, effect_content[index])
-
-            /* different part End */
-
-        }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
-
-        this.cursor.active()
     }
 }
 

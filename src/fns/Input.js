@@ -32,21 +32,28 @@ class Input extends FnAdditional {
     }
 
     /**
+     * 为了容易理清思路，先实现功能，这里并没有考虑优化。
+     * 总的来说就是先还原到删除选区时的状态，再考虑逆向操作。
+     *
      * 1. 先在 after 状态下，删除 input 增加的字符，此时状态还原为【刚删除选区的状态】
-     * 2. 所以此时再降序遍历，以便处理 offset 的问题，增加选区内容
-     * 3. 返回到 before 状态
+     * 2. 所以此时再降序遍历，以便处理 offset 的问题，然后再填充选区内容。
+     * 3. （由于选区在 before 状态才有，所以预先进行判断）
+     * 4. 返回到 before 状态
+     * 5. 激活一下光标闪烁
      */
     undo (step) {
         let {before, after, content} = step
 
         let is_selection_exist_before = []
 
+        /* 3 */
         this.cursor.deserialize(before, Option.DATA_ONLY)
 
         this.cursor.pureTraverse((cursor, index) => {
             is_selection_exist_before.push(cursor.isSelectionExist())
         })
 
+        /* 1 */
         let content_length = content.length
 
         this.cursor.deserialize(after).do((cursor, index) => {
@@ -56,18 +63,26 @@ class Input extends FnAdditional {
 
         }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
 
+        /* 2 */
         this.cursor.pureTraverse((cursor, index) => {
             if (is_selection_exist_before[index]) {
                 let selection_content = cursor.storage[Field.SAVED]
+
                 this.line.insertContent(cursor.logicalY, cursor.logicalX, selection_content)
             }
         }, Option.DESC)
 
+        /* 4 */
         this.cursor.deserialize(before)
 
+        /* 5 */
         this.cursor.active()
     }
 
+    /**
+     * 为了省事，暂时实现功能
+     * 就是复现到 before 的位置，进行再一次的 input 操作
+     */
     redo (step) {
         let {before, after, content} = step
 

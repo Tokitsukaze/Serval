@@ -1,3 +1,5 @@
+const Shigure = require('../utils/Shigure')
+
 const TemplateLineContainer = require('../templates/LineContainer')
 const TemplateLine = require('../templates/Line')
 
@@ -17,15 +19,19 @@ class LineManager {
     }
 
     /**
-     * 创建到目标行为止，initial_content 只作用于目标行
+     * 从目标行开始，initial_content 只作用于目标行 + count
      */
-    create (target_line_number, initial_content = '') {
-        let count = 1
+    create (target_line_number, count = 1, initial_content = '') {
+        if (Shigure.isString(count)) {
+            initial_content = count
+            count = 1
+        }
+
         let before = target_line_number
 
-        if (this.max < target_line_number) {
-            count = target_line_number - this.max + 1
-            before = this.max
+        if (this.max <= target_line_number) {
+            count = target_line_number - this.max || 1
+            before = this.max - 1
         }
 
         let $line_number_fragment = document.createDocumentFragment()
@@ -36,7 +42,7 @@ class LineManager {
         let i
         for (i = 0; i < count - 1; i++) {
             let line = this._$line({
-                line_number: before + i,
+                line_number: before + i + 1,
                 start_number: start_from,
                 initial_content: ''
             })
@@ -46,7 +52,7 @@ class LineManager {
         }
 
         let line = this._$line({
-            line_number: before + i,
+            line_number: before + i + 1,
             start_number: start_from,
             initial_content: initial_content || ''
         })
@@ -54,7 +60,7 @@ class LineManager {
         $line_number_fragment.appendChild(line.$line_number)
         $line_content_fragment.appendChild(line.$line_content)
 
-        let prev_line_number = before - 1
+        let prev_line_number = before
         let $current_content = this.$getContentList()[prev_line_number]
         let $current_number = this.$getNumberList()[prev_line_number]
 
@@ -195,6 +201,7 @@ class LineManager {
 
         node.innerHTML = this.processor.process(content.substring(0, start) + content.substring(end, content.length))
 
+        return content
         // node.textContent = content.substring(0, start) + content.substring(end, content.length)
     }
 
