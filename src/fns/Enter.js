@@ -14,26 +14,6 @@ class Enter extends FnAdditional {
         this.type = 'enter'
     }
 
-    handler (step, undos, redos) {
-        let length = undos.length
-
-        /* 1 */
-        if (length > 0) {
-            let last = undos[length - 1]
-
-            if (step.type === last.type && step.created - last.created < 1000) {
-                last.content.effect_count += step.content.effect_count
-                last.after = step.after
-
-                last.updated = new Date().getTime()
-
-                return
-            }
-        }
-
-        undos.push(step)
-    }
-
     do (event) {
         event.preventDefault()
 
@@ -57,6 +37,26 @@ class Enter extends FnAdditional {
         }, Option.NOT_DETECT_COLLISION)
 
         return result
+    }
+
+    handler (step, undos, redos) {
+        let length = undos.length
+
+        /* 1 */
+        if (length > 0) {
+            let last = undos[length - 1]
+
+            if (step.type === last.type && step.created - last.created < 1000) {
+                last.content.effect_count += step.content.effect_count
+                last.after = step.after
+
+                last.updated = new Date().getTime()
+
+                return
+            }
+        }
+
+        undos.push(step)
     }
 
     /**

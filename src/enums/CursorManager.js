@@ -8,6 +8,9 @@ const Enum = {
     SAVE_SELECTION: true,
     NOT_SAVE_SELECTION: false,
 
+    RESET_OFFSET: true,
+    NOT_RESET_OFFSET: false,
+
     ASC: true,
     DESC: false
 }

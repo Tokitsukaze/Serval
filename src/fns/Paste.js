@@ -31,6 +31,25 @@ class Paste extends FnAdditional {
         }
     }
 
+    handler (step, undos) {
+        let length = undos.length
+
+        /* 1 */
+        if (length > 0) {
+            let last = undos[length - 1]
+
+            if (step.type === last.type && step.created - last.created < 1000) {
+
+
+                last.updated = new Date().getTime()
+
+                return
+            }
+        }
+
+        undos.push(step)
+    }
+
     undo () {
 
     }

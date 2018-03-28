@@ -9,6 +9,20 @@ class CtrlEnter extends FnAdditional {
         this.type = 'ctrl-enter'
     }
 
+    do (event) {
+        event.preventDefault()
+
+        this.cursor.do((cursor) => {
+            cursor.clearSelection()
+            this.line.create(cursor.logicalY, 1)
+
+            cursor.logicalY += 1
+            cursor.xToStart()
+        }, Option.NOT_REMOVE_SELECTION)
+
+        return 1
+    }
+
     handler (step, undos, redos) {
         let length = undos.length
 
@@ -27,20 +41,6 @@ class CtrlEnter extends FnAdditional {
         }
 
         undos.push(step)
-    }
-
-    do (event) {
-        event.preventDefault()
-
-        this.cursor.do((cursor) => {
-            cursor.clearSelection()
-            this.line.create(cursor.logicalY, 1)
-
-            cursor.logicalY += 1
-            cursor.xToStart()
-        }, Option.NOT_REMOVE_SELECTION)
-
-        return 1
     }
 
     undo (step) {

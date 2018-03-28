@@ -137,7 +137,7 @@ class CursorManager extends CursorManagerAdditional {
      * 2. 非同一行的光标，重设 logicalX 累加值
      * 3. 该次 task 后，光标在 X/Y 上的偏移量，让其累加到下一个光标上
      */
-    do (task, remove_selection = Option.REMOVE_SELECTION, detect_selection = Option.DETECT_COLLISION, save_selection = Option.SAVE_SELECTION) {
+    do (task, remove_selection = Option.REMOVE_SELECTION, detect_selection = Option.DETECT_COLLISION, save_selection = Option.SAVE_SELECTION, reset_offset = Option.RESET_OFFSET) {
         let cursor_list = this.cursor_list
         let length = cursor_list.length
 
@@ -145,7 +145,7 @@ class CursorManager extends CursorManagerAdditional {
             for (let i = length - 1; i >= 0;  i--) {
                 let cursor = cursor_list[i]
 
-                cursor.resetOffset()
+                reset_offset && cursor.resetOffset()
 
                 if (cursor.isSelectionExist()) {
                     save_selection && (cursor.storage[Field.SAVED] = cursor.getSelectionContent())
@@ -153,8 +153,10 @@ class CursorManager extends CursorManagerAdditional {
                 }
             }
         } else {
-            for (let i = length - 1; i >= 0; i--) {
-                cursor_list[i].resetOffset()
+            if (reset_offset) {
+                for (let i = length - 1; i >= 0; i--) {
+                    cursor_list[i].resetOffset()
+                }
             }
         }
 

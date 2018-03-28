@@ -31,6 +31,25 @@ class Input extends FnAdditional {
         return content
     }
 
+    handler (step, undos) {
+        let length = undos.length
+
+        /* 1 */
+        if (length > 0) {
+            let last = undos[length - 1]
+
+            if (step.type === last.type && step.created - last.created < 1000) {
+                last.merge(step)
+
+                last.updated = new Date().getTime()
+
+                return
+            }
+        }
+
+        undos.push(step)
+    }
+
     /**
      * 为了容易理清思路，先实现功能，这里并没有考虑优化。
      * 总的来说就是先还原到删除选区时的状态，再考虑逆向操作。

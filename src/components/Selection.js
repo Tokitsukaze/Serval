@@ -225,11 +225,7 @@ class Selection extends SelectionAdditional {
         this.line.setContent(this.start.logicalY, content)
 
         if (length > 1) {
-            let count = this.start.logicalY + 1
-
-            for (let i = count; count <= this.end.logicalY; count++) {
-                this.line.delete(i)
-            }
+            this.line.delete(this.end.logicalY, effectY)
         }
 
         this.type = Type.NOT_EXIST
