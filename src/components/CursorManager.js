@@ -167,12 +167,15 @@ class CursorManager extends CursorManagerAdditional {
         for (let i = 0; i < length; i++) {
             let cursor = cursor_list[i]
 
+            let tempY = offsetY
+            let tempX = offsetX
+
             cursor.setLogicalYWithoutOffset(cursor.logicalY + offsetY)
             cursor.logicalY === lastY ? cursor.setLogicalXWithoutOffset(cursor.logicalX + offsetX) : (offsetX = 0)
 
             this.beforeTask(cursor, i)
 
-            task(cursor, i)
+            task(cursor, i, tempY, tempX)
 
             /* 3 */
             offsetY += cursor.offsetY

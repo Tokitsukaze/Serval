@@ -39,7 +39,8 @@ class Input extends FnAdditional {
             let last = undos[length - 1]
 
             if (step.type === last.type && step.created - last.created < 1000) {
-                last.merge(step)
+                last.content += step.content
+                last.after = step.after
 
                 last.updated = new Date().getTime()
 

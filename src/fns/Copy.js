@@ -26,7 +26,6 @@ class Copy extends FnAdditional {
             datas.push(this.processor.toString(content))
         }, Option.NOT_DETECT_COLLISION)
 
-        console.log(datas.join('\n'))
         event.clipboardData.setData('text/plain', datas.join('\n'))
     }
 }

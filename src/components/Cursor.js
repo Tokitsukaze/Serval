@@ -254,7 +254,7 @@ class Cursor extends CursorAdditional {
         }
     }
 
-    contetBefore () {
+    contentBefore () {
         let content = this.line.getContent(this.logicalY)
 
         return content.substring(0, this.logicalX)

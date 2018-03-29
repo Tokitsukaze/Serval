@@ -46,7 +46,7 @@ class Backspace extends FnAdditional {
                 /* 2 */
                 if (cursor.logicalY > 0) {
                     let content = cursor.contentAround()
-                    this.line.delete(cursor.logicalY)
+                    this.line.delete(cursor.logicalY, 1)
                     cursor.logicalY -= 1
                     cursor.xToEnd()
                     this.line.insertContent(cursor.logicalY, cursor.logicalX, content.after)
@@ -57,7 +57,7 @@ class Backspace extends FnAdditional {
 
                 result.push([''])
                 return
-            }, Option.NOT_REMOVE_SELECTION, Option.DETECT_COLLISION, Option.SAVE_SELECTION, Option.NOT_RESET_OFFSET)
+            }, Option.NOT_REMOVE_SELECTION, Option.DETECT_COLLISION, Option.NOT_SAVE_SELECTION, Option.NOT_RESET_OFFSET)
         } else {
             this.cursor.do(() => {
                 result.push([''])
@@ -73,6 +73,9 @@ class Backspace extends FnAdditional {
      * 3. 如果值是空数组，说明换行了。
      * 4. 如果是数组但是没有文字，说明该光标位于第一个位置，什么也没做，什么也不做
      * 5. 否则就是有效删除
+     * 6. 如果 Backspace 的第一波操作就是删除当前行，导致 step.content[0] = []
+     * 这个 [] 加上后续的拼接字符xxx 就会变成 undefinedxxx
+     * 所以这里加个判断，并且当触发删行的时候，需要再推入一个空字符串，表示新的一行
      */
     handler (step, undos, redos) {
         let length = undos.length
@@ -88,7 +91,7 @@ class Backspace extends FnAdditional {
 
                 /* 1 */
                 if (last_content_arr.length !== current_content_arr_length) {
-                    undos.unshift(step)
+                    undos.push(step)
 
                     return
                 }
@@ -110,7 +113,7 @@ class Backspace extends FnAdditional {
                         last.unshift('')
                     } else if (current[0].length !== 0) {
                         /* 4, 5 */
-                        last[last.length - 1] = current[0] + last[last.length - 1]
+                        last[0] = current[0] + last[0]
                     }
                 }
 
@@ -121,18 +124,14 @@ class Backspace extends FnAdditional {
             }
         }
 
-        /**
-         * 如果 Backspace 的第一波操作就是删除当前行，导致 step.content[0] = []
-         * 这个 [] 加上后续的拼接字符xxx 就会变成 undefinedxxx
-         * 所以这里加个判断
-         */
+        /* 6 */
         let current_content_arr = step.content
         let current_content_arr_length = current_content_arr.length
         for (let i = 0; i < current_content_arr_length; i++) {
             let current = current_content_arr[i]
 
             if (current.length === 0) {
-                current.push('')
+                current.push('', '')
             }
         }
 
@@ -159,7 +158,13 @@ class Backspace extends FnAdditional {
             let length = _content.length - 1
 
             this.line.insertContent(cursor.logicalY, cursor.logicalX, _content)
+
             cursor.logicalY += length
+
+            if (_content.length > 1) {
+                cursor.xToStart()
+            }
+
             cursor.logicalX += _content[length].length
 
         }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
@@ -191,7 +196,6 @@ class Backspace extends FnAdditional {
         this.cursor.deserialize(before).do((cursor, index) => {
             let _content = content[index]
             let length = _content.length - 1
-            let last_line_length =  _content[length].length
 
             this.line.delete(cursor.logicalY, length)
             cursor.logicalY -= length
