@@ -68,14 +68,10 @@ class CursorManager extends CursorManagerAdditional {
     }
 
     remove (cursor) {
-        this.selection.release(cursor.selection)
-        this.template.$cursor_container.removeChild(cursor.$getRef())
-        this.cursor_list.splice(this.cursor_list.indexOf(cursor), 1)
-    }
-
-    removeAsync (cursor) {
         setTimeout(() => {
-            this.remove(cursor)
+            this.selection.release(cursor.selection)
+            this.template.$cursor_container.removeChild(cursor.$getRef())
+            this.cursor_list.splice(this.cursor_list.indexOf(cursor), 1)
         })
     }
 
@@ -91,7 +87,7 @@ class CursorManager extends CursorManagerAdditional {
         })
     }
 
-    pureTraverse(cb, order_type = Option.ASC) {
+    pureTraverse(cb, order_type = Option.ASC, detect_selection = Option.NOT_DETECT_COLLISION) {
         let cursor_list = this.cursor_list
         let length = cursor_list.length
 
@@ -104,6 +100,8 @@ class CursorManager extends CursorManagerAdditional {
                 cb(cursor_list[i], i)
             }
         }
+
+        detect_selection && this.detect()
     }
 
     traverse (cb, detect_selection = Option.DETECT_COLLISION, order_type = Option.ASC) {
@@ -201,12 +199,12 @@ class CursorManager extends CursorManagerAdditional {
 
                 if (!next.isSelectionExist()) {
                     if (current.equal(next)) {
-                        this.removeAsync(current)
+                        this.remove(current)
                         continue
                     }
                 } else {
                     if (!current.getPosition().less(next.getSelectionStart())) {
-                        this.removeAsync(current)
+                        this.remove(current)
                         continue
                     }
                 }
@@ -218,7 +216,7 @@ class CursorManager extends CursorManagerAdditional {
                         next.mergeSelection(current)
                         next.getSelectionBase().deepCopy(current.getSelectionBase())
 
-                        this.removeAsync(current)
+                        this.remove(current)
                         continue
                     }
                 } else {
@@ -230,7 +228,7 @@ class CursorManager extends CursorManagerAdditional {
                             next.logicalX = current.logicalX
                             next.setArrowX(current.getArrowX())
 
-                            this.removeAsync(current)
+                            this.remove(current)
                             continue
                         }
 
@@ -238,7 +236,7 @@ class CursorManager extends CursorManagerAdditional {
                             next.mergeSelection(current)
                             next.getSelectionBase().deepCopy(current.getSelectionBase())
 
-                            this.removeAsync(current)
+                            this.remove(current)
                             continue
                         }
                     }
@@ -340,13 +338,13 @@ class CursorManager extends CursorManagerAdditional {
 
                     /* 1.2 */
                     if (current.less(cursor)) {
-                        this.removeAsync(cursor)
+                        this.remove(cursor)
                         continue
                     }
 
                     /* 1.3 */
                     if (current.equal(cursor)) {
-                        this.removeAsync(cursor)
+                        this.remove(cursor)
                         return
                     }
                 }
@@ -361,20 +359,20 @@ class CursorManager extends CursorManagerAdditional {
 
                 /* 1.2 */
                 if (point.less(start)) {
-                    this.removeAsync(cursor)
+                    this.remove(cursor)
                     continue
                 }
 
                 /* 1.3 */
                 if (point.equal(start)) {
-                    this.removeAsync(cursor)
+                    this.remove(cursor)
                     return
                 }
 
                 /* 1.4 */
                 current.logicalY = start.logicalY
                 current.logicalX = start.logicalX
-                this.removeAsync(cursor)
+                this.remove(cursor)
                 return
             }
 
@@ -390,13 +388,13 @@ class CursorManager extends CursorManagerAdditional {
 
                     /* 2.2 */
                     if (current.greater(cursor)) {
-                        this.removeAsync(cursor)
+                        this.remove(cursor)
                         continue
                     }
 
                     /* 2.3 */
                     if (current.equal(cursor)) {
-                        this.removeAsync(cursor)
+                        this.remove(cursor)
                         return
                     }
                 }
@@ -411,20 +409,20 @@ class CursorManager extends CursorManagerAdditional {
 
                 /* 2.2 */
                 if (point.greater(end)) {
-                    this.removeAsync(cursor)
+                    this.remove(cursor)
                     continue
                 }
 
                 /* 2.3 */
                 if (point.equal(end)) {
-                    this.removeAsync(cursor)
+                    this.remove(cursor)
                     return
                 }
 
                 /* 2.4 */
                 current.logicalY = end.logicalY
                 current.logicalX = end.logicalX
-                this.removeAsync(cursor)
+                this.remove(cursor)
                 return
             }
         }

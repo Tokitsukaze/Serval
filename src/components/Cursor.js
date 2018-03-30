@@ -272,6 +272,10 @@ class Cursor extends CursorAdditional {
         return this.selection.isExist()
     }
 
+    setSelectionType (type) {
+        type && this.selection.setType(type)
+    }
+
     setSelectionBase (point = this.point) {
         this.selection.setBase(point)
     }

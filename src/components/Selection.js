@@ -240,6 +240,10 @@ class Selection extends SelectionAdditional {
         return this.type === Type.NOT_EXIST ? false : true
     }
 
+    setType (type) {
+        this.type = type
+    }
+
     setBase (point) {
         this.base.deepCopy(point)
     }
