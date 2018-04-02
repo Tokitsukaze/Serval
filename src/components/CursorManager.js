@@ -23,6 +23,10 @@ class CursorManager extends CursorManagerAdditional {
         this._$mount()
     }
 
+    get (index) {
+        return this.cursor_list[index]
+    }
+
     active () {
         this.traverse(cursor => cursor.active(), Option.NOT_DETECT_COLLISION)
     }

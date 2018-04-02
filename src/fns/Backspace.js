@@ -143,15 +143,11 @@ class Backspace extends FnAdditional {
 
         let is_selection_exist_before = []
 
-        /* 3 */
         this.cursor.deserialize(before, Option.DATA_ONLY)
 
         this.cursor.pureTraverse((cursor, index) => {
             is_selection_exist_before.push(cursor.isSelectionExist())
         })
-
-        /* 1 */
-        let content_length = content.length
 
         this.cursor.deserialize(after).do((cursor, index) => {
             let _content = content[index]
@@ -169,7 +165,6 @@ class Backspace extends FnAdditional {
 
         }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
 
-        /* 2 */
         this.cursor.pureTraverse((cursor, index) => {
             if (is_selection_exist_before[index]) {
                 let selection_content = cursor.storage[Field.SAVED]
@@ -178,10 +173,8 @@ class Backspace extends FnAdditional {
             }
         }, Option.DESC)
 
-        /* 4 */
         this.cursor.deserialize(before)
 
-        /* 5 */
         this.cursor.active()
     }
 

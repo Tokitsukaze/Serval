@@ -1,6 +1,6 @@
 class Shigure {
     static isObject (arg) {
-        return Object.prototype.toString(arg) === '[object Object]' ? true : false
+        return Object.prototype.toString(arg) === '[object Object]'
     }
 
     static isNumber (arg) {
@@ -9,6 +9,10 @@ class Shigure {
 
     static isString (arg) {
         return typeof arg === 'string'
+    }
+
+    static isArray (arg) {
+        return Array.isArray(arg)
     }
 }
 

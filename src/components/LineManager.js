@@ -20,6 +20,7 @@ class LineManager {
 
     /**
      * 从目标行开始，initial_content 只作用于目标行 + count
+     *
      */
     create (target_line_number, count = 1, initial_content = '') {
         if (Shigure.isString(count)) {
@@ -29,8 +30,8 @@ class LineManager {
 
         let before = target_line_number
 
-        if (this.max <= target_line_number) {
-            count = target_line_number - this.max || 1
+        if (target_line_number > this.max) {
+            count = target_line_number - this.max + 1 || 1
             before = this.max - 1
         }
 
@@ -42,7 +43,7 @@ class LineManager {
         let i
         for (i = 0; i < count - 1; i++) {
             let line = this._$line({
-                line_number: before + i + 1,
+                line_number: before + i,
                 start_number: start_from,
                 initial_content: ''
             })
@@ -52,7 +53,7 @@ class LineManager {
         }
 
         let line = this._$line({
-            line_number: before + i + 1,
+            line_number: before + i,
             start_number: start_from,
             initial_content: initial_content || ''
         })
@@ -60,9 +61,9 @@ class LineManager {
         $line_number_fragment.appendChild(line.$line_number)
         $line_content_fragment.appendChild(line.$line_content)
 
-        let prev_line_number = before
-        let $current_content = this.$getContentList()[prev_line_number]
-        let $current_number = this.$getNumberList()[prev_line_number]
+        let current_line_number = before
+        let $current_content = this.$getContentList()[current_line_number]
+        let $current_number = this.$getNumberList()[current_line_number]
 
         if (this.$content_container.lastChild == $current_content) {
             this.$number_container.appendChild($line_number_fragment)
@@ -73,7 +74,7 @@ class LineManager {
         }
 
         setTimeout(() => {
-            this.reorder(target_line_number)
+            this.reorder(before)
         })
 
         this.max += count
@@ -160,6 +161,7 @@ class LineManager {
         let $content_list = this.$getContentList()
 
         let node = $content_list[target_line_number]
+
         let text = node.textContent
 
         let before = text.substring(0, char_offset)
