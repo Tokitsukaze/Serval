@@ -14,7 +14,7 @@ class CtrlEnter extends FnAdditional {
 
         this.cursor.do((cursor) => {
             cursor.clearSelection()
-            this.line.create(cursor.logicalY, 1)
+            this.line.create(cursor.logicalY + 1)
 
             cursor.logicalY += 1
             cursor.xToStart()
@@ -73,10 +73,11 @@ class CtrlEnter extends FnAdditional {
 
         this.cursor.do((cursor) => {
             cursor.clearSelection()
-            this.line.create(cursor.logicalY, 1)
+            this.line.create(cursor.logicalY + 1, effect_count)
 
-            cursor.logicalY += 1
+            cursor.logicalY += effect_count
             cursor.xToStart()
+
         }, Option.NOT_REMOVE_SELECTION)
     }
 }

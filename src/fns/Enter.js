@@ -26,7 +26,7 @@ class Enter extends FnAdditional {
             let {before, after} = cursor.contentAround()
 
             this.line.setContent(cursor.logicalY, before)
-            this.line.create(cursor.logicalY, 1, after)
+            this.line.create(cursor.logicalY + 1, after)
 
             cursor.logicalY += 1
             cursor.xToStart()
@@ -106,7 +106,7 @@ class Enter extends FnAdditional {
             let {before, after} = cursor.contentAround()
 
             this.line.setContent(cursor.logicalY, before)
-            this.line.create(cursor.logicalY, effect_count, after)
+            this.line.create(cursor.logicalY + 1, effect_count, after)
 
             cursor.logicalY += effect_count
             cursor.xToStart()

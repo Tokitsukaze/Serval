@@ -71,11 +71,16 @@ class CursorManager extends CursorManagerAdditional {
         }
     }
 
+    mark (cursor) {
+        cursor.MARK = 'remove'
+    }
+
     remove (cursor) {
         setTimeout(() => {
             this.selection.release(cursor.selection)
             this.template.$cursor_container.removeChild(cursor.$getRef())
             this.cursor_list.splice(this.cursor_list.indexOf(cursor), 1)
+            console.error('removed')
         })
     }
 

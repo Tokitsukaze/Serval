@@ -2,8 +2,11 @@ const FnAdditional = require('../interfaces/FnAdditional')
 
 const Type = require('../enums/Selection')
 
-const Option = require('../enums/CursorManager')
+const CursorOption = require('../enums/Cursor')
+const CursorManagerOption = require('../enums/CursorManager')
 const Field = require('../enums/Cursor')
+
+const Option = Object.assign({}, CursorOption, CursorManagerOption)
 
 class Cut extends FnAdditional {
     constructor () {
@@ -44,7 +47,7 @@ class Cut extends FnAdditional {
             let content = cursor.getSelectionContent()
 
             datas.push(this.processor.toString(content))
-            result.push([''])
+            result.push([true])
         })
 
         if (datas.length !== 0) {
@@ -63,8 +66,10 @@ class Cut extends FnAdditional {
 
             let logicalY = cursor.logicalY
 
-            if (duplicate[logicalY] === 0) {
+            if (duplicate[logicalY] >= 1) {
+
                 duplicate[logicalY]++
+
                 return
             }
 
@@ -78,14 +83,14 @@ class Cut extends FnAdditional {
 
             datas.push(content)
 
-            duplicate[logicalY] = 0
+            duplicate[logicalY] = 1
         })
 
         this.cursor.do((cursor, index, offsetY, offsetX) => {
             let logicalY = cursor.logicalY
             let key = logicalY - offsetY
 
-            if (duplicate[key] === 0) {
+            if (duplicate[key] === 1) {
 
                 if (logicalY === this.line.max - 1) {
                     this.line.deleteContent(logicalY)
@@ -94,6 +99,7 @@ class Cut extends FnAdditional {
                 }
 
                 cursor.offsetY -= 1 /* 2 */
+
                 return
             } else {
                 duplicate[key]--
@@ -109,9 +115,15 @@ class Cut extends FnAdditional {
 
     /**
      * 1. 如果光标有合并的话，拆分成不同的步骤
+     * 2. 如果上次光标操作只删除了选区，那么替换上次的影响内容
+     * 3. 如果该内容是最后一行且无内容，不推入数组
      */
     handler (step, undos) {
         let length = undos.length
+
+        if (step.content === false) {
+            return
+        }
 
         if (length > 0) {
             let last = undos[length - 1]
@@ -119,24 +131,25 @@ class Cut extends FnAdditional {
             if (step.type === last.type && step.created - last.created < 1000) {
                 /* 1 */
                 if (step.content.length !== last.content.length) {
-                    if (step.content === false) {
-                        return
-                    }
-
                     undos.push(step)
 
                     return
                 }
 
-                if (step.content === false) {
+                /* 2 */
+                if (last.content[0][0] === true) {
+                    last.content = step.content
+
+                    last.after = step.after
+                    last.updated = new Date().getTime()
+
                     return
                 }
 
                 for (let i = 0; i < last.content.length; i++) {
                     let step_content = step.content[i][0]
 
-                    console.info(step_content)
-
+                    /* 3 */
                     if (step_content !== false) {
                         last.content[i].push(step_content)
                     }
@@ -149,10 +162,6 @@ class Cut extends FnAdditional {
             }
         }
 
-        if (step.content === false) {
-            return
-        }
-
         undos.push(step)
     }
 
@@ -163,44 +172,36 @@ class Cut extends FnAdditional {
 
         let is_selection_exist_before = []
 
-        let has_selection = false
-
         this.cursor.deserialize(before, Option.DATA_ONLY).pureTraverse((cursor, index) => {
-            let is_selection_exist = cursor.isSelectionExist()
-            is_selection_exist_before.push(is_selection_exist)
-
-            if (is_selection_exist) {
-                has_selection = true
-            }
+            is_selection_exist_before.push(cursor.isSelectionExist())
         })
 
-        if (has_selection === false) {
-            let cursor_length = this.cursor.length() - 1
-
+        if (content[0][0] !== true) {
             this.cursor.deserialize(after).do((cursor, index) => {
+                console.info('length:', this.cursor.length())
                 let _content = content[index]
+
+                console.info('pos', cursor.logicalY, cursor.logicalX)
+                let _content_length = _content.length
 
                 if (_content === void 0) {
                     return
                 }
 
-                if (cursor.logicalY !== this.line.max - 1 || index !== cursor_length) {
-                    _content.push('')
+                if (cursor.logicalY === this.line.max - 1) {
+                    this.line.insertContent(cursor.logicalY, 0, _content)
+                } else if (_content[0] !== false) {
+                    for (let i = 0; i < _content_length; i++) {
+                        this.line.create(cursor.logicalY + i, _content[i])
+                    }
                 }
 
-                if (_content[0] !== false) {
-                    this.line.create()
-                    this.line.insertContent(cursor.logicalY, cursor.logicalX, _content)
-                }
-
-                cursor.offsetY += _content.length - 1
+                cursor.offsetY += _content.length
 
             }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
         }
 
-        this.cursor.deserialize(after)
-
-        this.cursor.do((cursor, index) => {
+        this.cursor.deserialize(after).do((cursor, index) => {
             if (is_selection_exist_before[index]) {
                 let start = cursor.getSelectionStart()
 
@@ -235,6 +236,11 @@ class Cut extends FnAdditional {
         })
 
         this.cursor.deserialize(after)
+    }
+
+    after () {
+        console.info(this.cursor.cursor_list[0], this.cursor.cursor_list[1], this.cursor.cursor_list[2])
+        return this.cursor.serialize()
     }
 }
 
