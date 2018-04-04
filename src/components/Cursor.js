@@ -9,6 +9,8 @@ const Option = Object.assign({}, CursorOption, SelectionOption)
 
 const Point = require('./Point')
 
+let L = 0
+
 /**
  * 1. 用于在进行上下左右移动时的
  */
@@ -23,6 +25,10 @@ class Cursor extends CursorAdditional {
         this.selection = selection
 
         this.point = new Point()
+
+        this.id = L
+
+        L += 1
 
         this.offsetY = 0
         this.offsetX = 0

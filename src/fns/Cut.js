@@ -24,7 +24,12 @@ class Cut extends FnAdditional {
      * 1 由于可能会有多个光标在同一行，但是应该只删除一行，所以在同一行的光标都废弃。
      * 2. 废弃的做法是，由于剪切后，任意情况下，光标都会回到行首，再让同一行的光标重新加上 offsetY，故意让光标冲突。
      * 让 do 自带的 detect 行为进行检测并删除。
+     *
      * 3. 如果唯一的光标在编辑器只有一行的情况下做剪切，什么都不干
+     *
+     * 4. 重复的光标也在 result 中 push 一个 false 作为占位，使得 result.length 与 this.cursor.length() 相等
+     * 用来在 handler 中代替 this.cursor.length()，表示没有发生光标合并。在之后的 undo 的去重中，会跳过 false 的 content。
+     *
      */
     do (event) {
         event.preventDefault()
@@ -59,19 +64,26 @@ class Cut extends FnAdditional {
         }
 
         /* 1 */
-        let duplicate = Object.create(null)
+        let duplicate = []
+
+        let lastY = -1
 
         this.cursor.pureTraverse((cursor, index) => {
             cursor.xToStart() /* 2 */
 
             let logicalY = cursor.logicalY
 
-            if (duplicate[logicalY] >= 1) {
+            if (lastY === logicalY) {
+                duplicate[index] = true
 
-                duplicate[logicalY]++
+                result.push(false)
 
                 return
             }
+
+            duplicate[index] = false
+
+            lastY = logicalY
 
             let content = this.line.getContent(logicalY)
 
@@ -82,30 +94,28 @@ class Cut extends FnAdditional {
             }
 
             datas.push(content)
-
-            duplicate[logicalY] = 1
         })
 
+        lastY = -1
+
         this.cursor.do((cursor, index, offsetY, offsetX) => {
-            let logicalY = cursor.logicalY
-            let key = logicalY - offsetY
-
-            if (duplicate[key] === 1) {
-
-                if (logicalY === this.line.max - 1) {
-                    this.line.deleteContent(logicalY)
-                } else {
-                    this.line.delete(logicalY, 1)
-                }
-
-                cursor.offsetY -= 1 /* 2 */
+            if (duplicate[index]) {
+               cursor.setLogicalYWithoutOffset(lastY)
 
                 return
-            } else {
-                duplicate[key]--
-
-                cursor.setLogicalYWithoutOffset(key) /* 2 */
             }
+
+            let logicalY = cursor.logicalY
+
+            if (logicalY === this.line.max - 1) {
+                this.line.deleteContent(logicalY)
+            } else {
+                this.line.delete(logicalY, 1)
+            }
+
+            cursor.offsetY -= 1 /* 2 */
+
+            lastY = cursor.logicalY
         })
 
         event.clipboardData.setData('text/plain', datas.join('\n'))
@@ -165,38 +175,86 @@ class Cut extends FnAdditional {
         undos.push(step)
     }
 
+    /**
+     * 1. 用来记录哪些光标是同一行的，如果他们在同一行，那么就不做处理
+     * 2. 只有有一个光标处在最后一行（处在最后一行，说明他之后的光标也都是重复的，不作处理了），且当前行没有内容 说明该行是只删除了内容，并不是该行被删除了
+     */
     undo (step) {
         let {before, after, content} = step
 
         console.info('undo', content)
 
+        let duplicate = []
+        let lastY = -1
+
         let is_selection_exist_before = []
 
         this.cursor.deserialize(before, Option.DATA_ONLY).pureTraverse((cursor, index) => {
             is_selection_exist_before.push(cursor.isSelectionExist())
+
+            let logicalY = cursor.logicalY
+
+            /* 1 */
+            if (lastY === logicalY) {
+                duplicate[index] = true
+
+                return
+            }
+
+            lastY = logicalY
+            duplicate[index] = false
         })
 
-        if (content[0][0] !== true) {
-            this.cursor.deserialize(after).do((cursor, index) => {
-                console.info('length:', this.cursor.length())
-                let _content = content[index]
+        duplicate_length = duplicate.length
 
-                console.info('pos', cursor.logicalY, cursor.logicalX)
-                let _content_length = _content.length
+        console.warn(duplicate)
 
-                if (_content === void 0) {
+        if (content[0][0] !== true) { /* true 表示只处理了 selection */
+            this.cursor.deserialize(after)
+
+            console.info('cursor length', this.cursor.length())
+
+            let cursor_length = this.cursor.length() - 1
+
+            this.cursor.do((cursor, index, offsetY, offsetX) => {
+
+                console.error('check index', index)
+                /* 1 */
+                if (duplicate[index]) {
                     return
                 }
 
-                if (cursor.logicalY === this.line.max - 1) {
+                console.info('enter index', index)
+
+                let _content = content[index]
+                let _content_length = _content.length
+
+                /* 2 */
+                if (cursor.logicalY === this.line.max - 1 && cursor.contentAfter().length === 0) {
+                    for (let i = index + 1; i < duplicate_length; i++) {
+                        console.info('duplicate[i]', duplicate[i])
+                        if (duplicate[i] === false) {
+                            for (let j = 0; j < _content_length; j++) {
+                                console.error(cursor.logicalY + j)
+                                this.line.create(cursor.logicalY + j, _content[j])
+                            }
+
+                            cursor.offsetY += _content_length
+
+                            return
+                        }
+                    }
+
                     this.line.insertContent(cursor.logicalY, 0, _content)
+
                 } else if (_content[0] !== false) {
+
                     for (let i = 0; i < _content_length; i++) {
                         this.line.create(cursor.logicalY + i, _content[i])
                     }
-                }
 
-                cursor.offsetY += _content.length
+                    cursor.offsetY += _content_length
+                }
 
             }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
         }
@@ -219,28 +277,36 @@ class Cut extends FnAdditional {
     redo (step) {
         let {before, after, content} = step
 
-        console.info('redo', content)
+        this.cursor.deserialize(before)
+
+        if (content[0][0] === true) {
+            this.cursor.do(() => {})
+
+            this.cursor.deserialize(after)
+            return
+        }
 
         this.cursor.deserialize(before).do((cursor, index) => {
             let _content = content[index]
 
-            let length = _content.length - 1
-
-            if (length > 0) {
-                this.line.delete(cursor.logicalY, length)
-            } else {
-                this.line.deleteContent(cursor.logicalY)
+            if (_content === false) {
+                return
             }
 
-            cursor.offsetY -= length
+            let _content_length = _content.length
+
+            if (cursor.logicalY === this.line.max - 1) {
+
+                this.line.deleteContent(cursor.logicalY)
+
+            } else if (_content[0] !== false) {
+                this.line.delete(cursor.logicalY + _content_length - 1, _content_length)
+
+                cursor.offsetY -= _content_length
+            }
         })
 
         this.cursor.deserialize(after)
-    }
-
-    after () {
-        console.info(this.cursor.cursor_list[0], this.cursor.cursor_list[1], this.cursor.cursor_list[2])
-        return this.cursor.serialize()
     }
 }
 
