@@ -206,6 +206,11 @@ class Backspace extends FnAdditional {
 
         this.cursor.active()
     }
+
+    after () {
+        console.warn('from fn after', this.cursor.length())
+        return this.cursor.serialize()
+    }
 }
 
 module.exports = Backspace

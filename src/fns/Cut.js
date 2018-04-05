@@ -2,8 +2,11 @@ const FnAdditional = require('../interfaces/FnAdditional')
 
 const Type = require('../enums/Selection')
 
-const Option = require('../enums/CursorManager')
+const CursorOption = require('../enums/Cursor')
+const CursorManagerOption = require('../enums/CursorManager')
 const Field = require('../enums/Cursor')
+
+const Option = Object.assign({}, CursorOption, CursorManagerOption)
 
 class Cut extends FnAdditional {
     constructor () {
@@ -21,7 +24,12 @@ class Cut extends FnAdditional {
      * 1 由于可能会有多个光标在同一行，但是应该只删除一行，所以在同一行的光标都废弃。
      * 2. 废弃的做法是，由于剪切后，任意情况下，光标都会回到行首，再让同一行的光标重新加上 offsetY，故意让光标冲突。
      * 让 do 自带的 detect 行为进行检测并删除。
+     *
      * 3. 如果唯一的光标在编辑器只有一行的情况下做剪切，什么都不干
+     *
+     * 4. 重复的光标也在 result 中 push 一个 false 作为占位，使得 result.length 与 this.cursor.length() 相等
+     * 用来在 handler 中代替 this.cursor.length()，表示没有发生光标合并。在之后的 undo 的去重中，会跳过 false 的 content。
+     *
      */
     do (event) {
         event.preventDefault()
@@ -41,10 +49,9 @@ class Cut extends FnAdditional {
                 return
             }
 
-            let content = cursor.getSelectionContent()
+            datas.push(this.processor.toString(cursor.getSelectionContent()))
 
-            datas.push(this.processor.toString(content))
-            result.push([''])
+            result.push([true])
         })
 
         if (datas.length !== 0) {
@@ -56,17 +63,26 @@ class Cut extends FnAdditional {
         }
 
         /* 1 */
-        let duplicate = Object.create(null)
+        let duplicate = []
+
+        let lastY = -1
 
         this.cursor.pureTraverse((cursor, index) => {
             cursor.xToStart() /* 2 */
 
             let logicalY = cursor.logicalY
 
-            if (duplicate[logicalY] === 0) {
-                duplicate[logicalY]++
+            if (lastY === logicalY) {
+                duplicate[index] = true
+
+                result.push(false)
+
                 return
             }
+
+            duplicate[index] = false
+
+            lastY = logicalY
 
             let content = this.line.getContent(logicalY)
 
@@ -77,29 +93,28 @@ class Cut extends FnAdditional {
             }
 
             datas.push(content)
-
-            duplicate[logicalY] = 0
         })
 
+        lastY = -1
+
         this.cursor.do((cursor, index, offsetY, offsetX) => {
-            let logicalY = cursor.logicalY
-            let key = logicalY - offsetY
+            if (duplicate[index]) {
+               cursor.setLogicalYWithoutOffset(lastY)
 
-            if (duplicate[key] === 0) {
-
-                if (logicalY === this.line.max - 1) {
-                    this.line.deleteContent(logicalY)
-                } else {
-                    this.line.delete(logicalY, 1)
-                }
-
-                cursor.offsetY -= 1 /* 2 */
                 return
-            } else {
-                duplicate[key]--
-
-                cursor.setLogicalYWithoutOffset(key) /* 2 */
             }
+
+            let logicalY = cursor.logicalY
+
+            if (logicalY === this.line.max - 1) {
+                this.line.deleteContent(logicalY)
+            } else {
+                this.line.delete(logicalY, 1)
+            }
+
+            cursor.offsetY -= 1 /* 2 */
+
+            lastY = cursor.logicalY
         })
 
         event.clipboardData.setData('text/plain', datas.join('\n'))
@@ -109,9 +124,15 @@ class Cut extends FnAdditional {
 
     /**
      * 1. 如果光标有合并的话，拆分成不同的步骤
+     * 2. 如果上次光标操作只删除了选区，那么替换上次的影响内容
+     * 3. 如果该内容是最后一行且无内容，不推入数组
      */
     handler (step, undos) {
         let length = undos.length
+
+        if (step.content === false) {
+            return
+        }
 
         if (length > 0) {
             let last = undos[length - 1]
@@ -119,24 +140,25 @@ class Cut extends FnAdditional {
             if (step.type === last.type && step.created - last.created < 1000) {
                 /* 1 */
                 if (step.content.length !== last.content.length) {
-                    if (step.content === false) {
-                        return
-                    }
-
                     undos.push(step)
 
                     return
                 }
 
-                if (step.content === false) {
+                /* 2 */
+                if (last.content[0][0] === true) {
+                    last.content = step.content
+
+                    last.after = step.after
+                    last.updated = new Date().getTime()
+
                     return
                 }
 
                 for (let i = 0; i < last.content.length; i++) {
                     let step_content = step.content[i][0]
 
-                    console.info(step_content)
-
+                    /* 3 */
                     if (step_content !== false) {
                         last.content[i].push(step_content)
                     }
@@ -149,58 +171,66 @@ class Cut extends FnAdditional {
             }
         }
 
-        if (step.content === false) {
-            return
-        }
-
         undos.push(step)
     }
 
+    /**
+     * 1. 同一行的光标不做处理
+     * 2. 只有有一个光标处在最后一行（处在最后一行，说明他之后的光标也都是重复的，不作处理了），且当前行没有内容 说明该行是只删除了内容，并不是该行被删除了
+     */
     undo (step) {
         let {before, after, content} = step
 
-        console.info('undo', content)
-
         let is_selection_exist_before = []
 
-        let has_selection = false
-
         this.cursor.deserialize(before, Option.DATA_ONLY).pureTraverse((cursor, index) => {
-            let is_selection_exist = cursor.isSelectionExist()
-            is_selection_exist_before.push(is_selection_exist)
-
-            if (is_selection_exist) {
-                has_selection = true
-            }
+            is_selection_exist_before.push(cursor.isSelectionExist())
         })
 
-        if (has_selection === false) {
-            let cursor_length = this.cursor.length() - 1
+        if (content[0][0] !== true) { /* true 表示只处理了 selection */
+            this.cursor.deserialize(after)
 
-            this.cursor.deserialize(after).do((cursor, index) => {
+            this.cursor.do((cursor, index, offsetY, offsetX) => {
                 let _content = content[index]
 
-                if (_content === void 0) {
+                /* 1 */
+                if (_content === false) {
                     return
                 }
 
-                if (cursor.logicalY !== this.line.max - 1 || index !== cursor_length) {
-                    _content.push('')
-                }
+                let _content_length = _content.length
 
-                if (_content[0] !== false) {
-                    this.line.create()
-                    this.line.insertContent(cursor.logicalY, cursor.logicalX, _content)
-                }
+                /* 2 */
+                if (cursor.logicalY === this.line.max - 1 && cursor.contentAfter().length === 0) {
+                    for (let i = index + 1; i < content.length; i++) {
 
-                cursor.offsetY += _content.length - 1
+                        if (content[i] === false) {
+                            for (let j = 0; j < _content_length; j++) {
+                                console.error(cursor.logicalY + j)
+                                this.line.create(cursor.logicalY + j, _content[j])
+                            }
+
+                            cursor.offsetY += _content_length
+
+                            return
+                        }
+                    }
+
+                    this.line.insertContent(cursor.logicalY, 0, _content)
+
+                } else if (_content[0] !== false) {
+
+                    for (let i = 0; i < _content_length; i++) {
+                        this.line.create(cursor.logicalY + i, _content[i])
+                    }
+
+                    cursor.offsetY += _content_length
+                }
 
             }, Option.NOT_REMOVE_SELECTION, Option.NOT_DETECT_COLLISION)
         }
 
-        this.cursor.deserialize(after)
-
-        this.cursor.do((cursor, index) => {
+        this.cursor.deserialize(after).do((cursor, index) => {
             if (is_selection_exist_before[index]) {
                 let start = cursor.getSelectionStart()
 
@@ -218,20 +248,37 @@ class Cut extends FnAdditional {
     redo (step) {
         let {before, after, content} = step
 
-        console.info('redo', content)
+        this.cursor.deserialize(before)
+
+        if (content[0][0] === true) {
+            this.cursor.do(() => {})
+
+            this.cursor.deserialize(after)
+            return
+        }
 
         this.cursor.deserialize(before).do((cursor, index) => {
             let _content = content[index]
 
-            let length = _content.length - 1
-
-            if (length > 0) {
-                this.line.delete(cursor.logicalY, length)
-            } else {
-                this.line.deleteContent(cursor.logicalY)
+            if (_content === false) {
+                return
             }
 
-            cursor.offsetY -= length
+            let _content_length = _content.length
+
+            if (cursor.logicalY === this.line.max - _content_length) {
+
+                this.line.delete(cursor.logicalY + _content_length - 2, _content_length - 1)
+
+                this.line.deleteContent(cursor.logicalY)
+
+                cursor.offsetY -= _content_length
+
+            } else if (_content[0] !== false) {
+                this.line.delete(cursor.logicalY + _content_length - 1, _content_length)
+
+                cursor.offsetY -= _content_length
+            }
         })
 
         this.cursor.deserialize(after)

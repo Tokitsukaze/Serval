@@ -19,7 +19,12 @@ class LineManager {
     }
 
     /**
-     * 从目标行开始，initial_content 只作用于目标行 + count
+     * 创建目标行
+     *
+     * 1. https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore
+     * If referenceNode is null, the newNode is inserted at the end of the list of child nodes.
+     * referenceNode is not an optional parameter -- you must explicitly pass a Node or null.
+     * Failing to provide it or passing invalid values may behave differently in different browser versions.
      *
      */
     create (target_line_number, count = 1, initial_content = '') {
@@ -61,17 +66,12 @@ class LineManager {
         $line_number_fragment.appendChild(line.$line_number)
         $line_content_fragment.appendChild(line.$line_content)
 
-        let current_line_number = before
-        let $current_content = this.$getContentList()[current_line_number]
-        let $current_number = this.$getNumberList()[current_line_number]
+        let $anchor_content = this.$getContentList()[before]
+        let $anchor_number = this.$getNumberList()[before]
 
-        if (this.$content_container.lastChild == $current_content) {
-            this.$number_container.appendChild($line_number_fragment)
-            this.$content_container.appendChild($line_content_fragment)
-        } else {
-            this.$number_container.insertBefore($line_number_fragment, $current_number.nextSibling)
-            this.$content_container.insertBefore($line_content_fragment, $current_content.nextSibling)
-        }
+        /* 1 */
+        this.$number_container.insertBefore($line_number_fragment, $anchor_number || null)
+        this.$content_container.insertBefore($line_content_fragment, $anchor_content || null)
 
         setTimeout(() => {
             this.reorder(before)
@@ -85,9 +85,9 @@ class LineManager {
     /**
      * 从 target_line_number 开始删除，一共删除几行（包含该行）
      */
-    delete (target_line_number, count = 0) {
+    delete (target_line_number, count = 1) {
         if (count === 0) {
-            return
+            count = 1
         }
 
         let $content_list = this.$getContentList()
@@ -158,9 +158,7 @@ class LineManager {
     }
 
     insertContent (target_line_number, char_offset, content) {
-        let $content_list = this.$getContentList()
-
-        let node = $content_list[target_line_number]
+        let node = this.$getContentList()[target_line_number]
 
         let text = node.textContent
 
@@ -174,14 +172,13 @@ class LineManager {
                 node.innerHTML = this.processor.process(before + content[0])
 
                 let index
-                for (index = 0; index < length - 2; index++) {
-                    this.create(target_line_number + index, this.processor.process(content[index + 1]))
+                for (index = 1; index < length - 1; index++) {
+                    this.create(target_line_number + index, this.processor.process(content[index]))
                 }
-
-                this.create(target_line_number + index, this.processor.process(content[index + 1] + after))
+                this.create(target_line_number + index, this.processor.process(content[index] + after))
             } else if (length === 2) {
                 node.innerHTML = this.processor.process(before + content[0])
-                this.create(target_line_number, this.processor.process(content[1] + after))
+                this.create(target_line_number + 1, this.processor.process(content[1] + after))
             } else if (length === 1) {
                 node.innerHTML = this.processor.process(before + content[0] + after)
             }
