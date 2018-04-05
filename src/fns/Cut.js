@@ -49,9 +49,8 @@ class Cut extends FnAdditional {
                 return
             }
 
-            let content = cursor.getSelectionContent()
+            datas.push(this.processor.toString(cursor.getSelectionContent()))
 
-            datas.push(this.processor.toString(content))
             result.push([true])
         })
 
@@ -295,9 +294,13 @@ class Cut extends FnAdditional {
 
             let _content_length = _content.length
 
-            if (cursor.logicalY === this.line.max - 1) {
+            if (cursor.logicalY === this.line.max - _content_length) {
+
+                this.line.delete(cursor.logicalY + _content_length - 2, _content_length - 1)
 
                 this.line.deleteContent(cursor.logicalY)
+
+                cursor.offsetY -= _content_length
 
             } else if (_content[0] !== false) {
                 this.line.delete(cursor.logicalY + _content_length - 1, _content_length)

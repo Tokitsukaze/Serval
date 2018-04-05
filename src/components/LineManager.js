@@ -85,7 +85,7 @@ class LineManager {
     /**
      * 从 target_line_number 开始删除，一共删除几行（包含该行）
      */
-    delete (target_line_number, count = 0) {
+    delete (target_line_number, count = 1) {
         if (count === 0) {
             return
         }
