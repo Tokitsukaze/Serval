@@ -175,64 +175,36 @@ class Cut extends FnAdditional {
     }
 
     /**
-     * 1. 用来记录哪些光标是同一行的，如果他们在同一行，那么就不做处理
+     * 1. 同一行的光标不做处理
      * 2. 只有有一个光标处在最后一行（处在最后一行，说明他之后的光标也都是重复的，不作处理了），且当前行没有内容 说明该行是只删除了内容，并不是该行被删除了
      */
     undo (step) {
         let {before, after, content} = step
 
-        console.info('undo', content)
-
-        let duplicate = []
-        let lastY = -1
-
         let is_selection_exist_before = []
 
         this.cursor.deserialize(before, Option.DATA_ONLY).pureTraverse((cursor, index) => {
             is_selection_exist_before.push(cursor.isSelectionExist())
-
-            let logicalY = cursor.logicalY
-
-            /* 1 */
-            if (lastY === logicalY) {
-                duplicate[index] = true
-
-                return
-            }
-
-            lastY = logicalY
-            duplicate[index] = false
         })
-
-        duplicate_length = duplicate.length
-
-        console.warn(duplicate)
 
         if (content[0][0] !== true) { /* true 表示只处理了 selection */
             this.cursor.deserialize(after)
 
-            console.info('cursor length', this.cursor.length())
-
-            let cursor_length = this.cursor.length() - 1
-
             this.cursor.do((cursor, index, offsetY, offsetX) => {
+                let _content = content[index]
 
-                console.error('check index', index)
                 /* 1 */
-                if (duplicate[index]) {
+                if (_content === false) {
                     return
                 }
 
-                console.info('enter index', index)
-
-                let _content = content[index]
                 let _content_length = _content.length
 
                 /* 2 */
                 if (cursor.logicalY === this.line.max - 1 && cursor.contentAfter().length === 0) {
-                    for (let i = index + 1; i < duplicate_length; i++) {
-                        console.info('duplicate[i]', duplicate[i])
-                        if (duplicate[i] === false) {
+                    for (let i = index + 1; i < content.length; i++) {
+
+                        if (content[i] === false) {
                             for (let j = 0; j < _content_length; j++) {
                                 console.error(cursor.logicalY + j)
                                 this.line.create(cursor.logicalY + j, _content[j])
