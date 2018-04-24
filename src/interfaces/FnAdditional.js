@@ -3,13 +3,9 @@ class FnAdditional {
         this.name = null
         this.type = null
 
-        this.track = null
+        this.track = false
 
         this.enableTrack()
-    }
-
-    getState(name) {
-        return this[name]
     }
 
     enableTrack () {
@@ -32,7 +28,7 @@ class FnAdditional {
         if (length > 0) {
             let last = undos[length - 1]
 
-            if (step.type === last.type && step.created - last.created < 1000) {
+            if (step.type === last.type && step.created - last.updated <= 1000 && step.created - last.created <=  3000 && !this.interruption) {
                 last.merge(step)
 
                 last.updated = new Date().getTime()

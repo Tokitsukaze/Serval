@@ -7,8 +7,6 @@ class Processor {
         this.config = config
     }
 
-
-
     process (content) {
         return content
     }

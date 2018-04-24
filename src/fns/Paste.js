@@ -66,7 +66,7 @@ class Paste extends FnAdditional {
         if (length > 0) {
             let last = undos[length - 1]
 
-            if (step.type === last.type && step.created - last.created < 1000) {
+            if (step.type === last.type && step.created - last.updated <= 1000 && step.created - last.created <=  3000 && !this.interruption) {
                 if (last.content.times !== 0) {
                     last.content.times++
                 } else {

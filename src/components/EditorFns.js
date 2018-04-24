@@ -2,6 +2,7 @@ const Step = require('./Step')
 
 /**
  * Editor 的所有功能
+ * 1. interruption 用来控制是否打断 undo 合并操作
  */
 class EditorFns {
     constructor (line, cursor, processor, listener, tracker) {
@@ -11,6 +12,8 @@ class EditorFns {
         this.listener = listener
         this.tracker = tracker
 
+        this.interruption = false /* 1 */
+
         this.fns = Object.create(null)
     }
 
@@ -19,10 +22,11 @@ class EditorFns {
      */
     registry (fn) {
         let obj = Object.create(null)
+        const self = this
 
         obj.value = fn
 
-        if (fn.getState('track')) {
+        if (fn.track) {
 
             /* 1 */
             // Building...
@@ -30,14 +34,23 @@ class EditorFns {
             let _before = fn.before.bind(this)
             let _after = fn.after.bind(this)
             let _do = fn.do.bind(this)
+            let _handler = fn.handler.bind(this)
 
             obj.call = function (...args) {
                 let step = new Step(fn.type, _before(), _do(...args), _after())
 
-                this.tracker.push(step, fn.handler)
+                this.tracker.push(step, _handler)
+
+                self.interruption = !fn.track
             }.bind(this)
         } else {
-            obj.call = fn.do.bind(this)
+            let _do = fn.do.bind(this)
+
+            obj.call = function (...args) {
+                _do(...args)
+
+                self.interruption = !fn.track
+            }
         }
 
         this.fns[fn.name] = obj

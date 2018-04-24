@@ -116,7 +116,7 @@ class Cut extends FnAdditional {
         if (length > 0) {
             let last = undos[length - 1]
 
-            if (step.type === last.type && step.created - last.created < 1000) {
+            if (step.type === last.type && step.created - last.updated <= 1000 && step.created - last.created <=  3000 && !this.interruption) {
                 /* 1 */
                 if (step.content.length !== last.content.length) {
                     if (step.content === false) {

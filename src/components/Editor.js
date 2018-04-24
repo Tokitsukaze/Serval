@@ -12,6 +12,9 @@ const Tracker = require('./Tracker')
 /* <- Functions -> */
 
 const FnInput = require('../fns/Input')
+const FnSpace = require('../fns/Space')
+const FnTab = require('../fns/Tab')
+
 const FnEnter = require('../fns/Enter')
 const FnCtrlEnter = require('../fns/CtrlEnter')
 
@@ -143,6 +146,9 @@ class Editor {
 
     _initFns () {
         this.fns.registry(new FnInput())
+        this.fns.registry(new FnSpace())
+        this.fns.registry(new FnTab())
+
         this.fns.registry(new FnEnter())
         this.fns.registry(new FnCtrlEnter())
 
@@ -199,17 +205,13 @@ class Editor {
     _bindKey () {
         this.keybinding.bind('Backspace', this.fns.call('backspace'))
 
-        this.keybinding.bind('Tab', () => {
-            console.info('Tab')
-        })
+        this.keybinding.bind('Tab', this.fns.call('tab'))
 
         this.keybinding.bind('Enter', this.fns.call('enter'))
 
         this.keybinding.bind('Ctrl + Enter', this.fns.call('ctrl-enter'))
 
-        this.keybinding.bind('Space', () => {
-            console.info('Space')
-        })
+        this.keybinding.bind('Space', this.fns.call('space'))
 
         this.keybinding.bind('End',this.fns.call('end'))
         this.keybinding.bind('Shift + End',this.fns.call('shift-end'))
